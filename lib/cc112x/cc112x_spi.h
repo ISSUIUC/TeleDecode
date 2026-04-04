@@ -44,12 +44,12 @@ extern "C" {
 /******************************************************************************
  * INCLUDES
  */
-#include "hal_types.h"
-#ifdef MSP_EXP430G2
-  #include "hal_msp_exp430g2_spi.h"
-#else
-  #include "hal_spi_rf_trxeb.h"  
-#endif
+#include "teledecoder/hal_spi_rf_teledecoder.h"
+// #ifdef MSP_EXP430G2
+//   #include "hal_msp_exp430g2_spi.h"
+// #else
+//   #include "hal_spi_rf_trxeb.h"  
+// #endif
 
 /******************************************************************************
  * CONSTANTS
