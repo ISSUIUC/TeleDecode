@@ -1,6 +1,7 @@
 #include "hal_spi_rf_teledecoder.h"
 #include <Arduino.h>
 #include <SPI.h>
+#include <string.h>
 
 
 /******************************************************************************
@@ -54,20 +55,36 @@ void trxRfSpiInterfaceInit(uint8 prescalerValue)
  */
 rfStatus_t trx8BitRegAccess(uint8 accessType, uint8 addrByte, uint8 *pData, uint16 len)
 {
-  uint8 readValue;
+  rfStatus_t readValue[sizeof(uint8_t)];
 
 //   /* Pull CS_N low and wait for SO to go low before communication starts */
-//   TRXEM_SPI_BEGIN();
-//   while(TRXEM_PORT_IN & TRXEM_SPI_MISO_PIN);
-//   /* send register address byte */
-//   TRXEM_SPI_TX(accessType|addrByte);
-//   TRXEM_SPI_WAIT_DONE();
-//   /* Storing chip status */
-//   readValue = TRXEM_SPI_RX();
-//   trxReadWriteBurstSingle(accessType|addrByte,pData,len);
-//   TRXEM_SPI_END();
+  // TRXEM_SPI_BEGIN();
+  // while(TRXEM_PORT_IN & TRXEM_SPI_MISO_PIN);
+  // /* send register address byte */
+  // TRXEM_SPI_TX(accessType|addrByte);
+  // TRXEM_SPI_WAIT_DONE();
+  // /* Storing chip status */
+  // readValue = TRXEM_SPI_RX();
+  // trxReadWriteBurstSingle(accessType|addrByte,pData,len);
+  // TRXEM_SPI_END();
 //   /* return the status byte value */
-  return(readValue);
+
+  // AccessType is a Read
+  if(accessType & RADIO_READ_ACCESS) {
+    memset(readValue, addrByte, len);
+  }
+
+  // AccessType is a Write
+  if(accessType & RADIO_WRITE_ACCESS){
+    volatile int* accessed_reg = reinterpret_cast<volatile int*>(addrByte);
+  }
+
+  // AccessType is a Write and an Array? (Unsure about this)
+  if(accessType & (RADIO_BURST_ACCESS|RADIO_WRITE_ACCESS)){
+
+  }
+
+  return(*readValue);
 }
 
 /******************************************************************************
@@ -93,22 +110,24 @@ rfStatus_t trx8BitRegAccess(uint8 accessType, uint8 addrByte, uint8 *pData, uint
  */
 rfStatus_t trx16BitRegAccess(uint8 accessType, uint8 extAddr, uint8 regAddr, uint8 *pData, uint8 len)
 {
-  uint8 readValue;
+  rfStatus_t readValue[sizeof(uint16_t)];
 
-//   TRXEM_SPI_BEGIN();
-// //   while(TRXEM_PORT_IN & TRXEM_SPI_MISO_PIN);
-//   /* send extended address byte with access type bits set */
-//   TRXEM_SPI_TX(accessType|extAddr);
-//   TRXEM_SPI_WAIT_DONE();
-//   /* Storing chip status */
-//   readValue = TRXEM_SPI_RX();
-//   TRXEM_SPI_TX(regAddr);
-//   TRXEM_SPI_WAIT_DONE();
-//   /* Communicate len number of bytes */
-// //   trxReadWriteBurstSingle(accessType|extAddr,pData,len);
-//   TRXEM_SPI_END();
-  /* return the status byte value */
-  return(readValue);
+  // AccessType is a Read
+  if(accessType & RADIO_READ_ACCESS) {
+    memset(readValue, regAddr, len);
+  }
+
+  // AccessType is a Write
+  if(accessType & RADIO_WRITE_ACCESS){
+    volatile int* accessed_reg = reinterpret_cast<volatile int*>(regAddr);
+  }
+
+  // AccessType is a Write and an Array? (Unsure about this)
+  if(accessType & (RADIO_BURST_ACCESS|RADIO_WRITE_ACCESS)){
+
+  }
+
+  return(*readValue);
 }
 
 /*******************************************************************************
