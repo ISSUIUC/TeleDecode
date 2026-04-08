@@ -1,4 +1,5 @@
 #include"ao.h"
+#include <SPI.h>
 
 #define NUM_STATE 8
 #define AO_FEC_CRC_INIT 0xffff
