@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "cc1120_config.h"
 
 // put function declarations here:
 int myFunction(int, int);

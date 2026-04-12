@@ -2,6 +2,10 @@
 #include <Arduino.h>
 #include "cc1120.h"
 
+void CC1120::applyConfiguration() {
+
+}
+
 rfStatus_t CC1120::writeRegister(uint8_t address, uint8_t buffer){
     uint8_t header = (address & 0x3f) | SINGLE_REGISTER_WRITE;
 
@@ -60,4 +64,11 @@ rfStatus_t CC1120::readRegisterExtended(uint8_t address, uint8_t *buffer)
     SPI.endTransaction();
 
     return status;
+}
+
+int CC1120::FIFOBytesAvailable()
+{
+    uint8_t buffer;
+    readRegisterExtended(CC112X_NUM_RXBYTES, &buffer);
+    return buffer;
 }

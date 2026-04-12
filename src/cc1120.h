@@ -8,6 +8,7 @@ typedef uint8_t rfStatus_t; // See table 2
 class CC1120 {
     public:
         CC1120(SPIClass& spi, uint8_t pin_cs): spi(spi), pin_cs(pin_cs){}
+        void applyConfiguration();
     private:
         /* @brief Writes a buffer in the register space*/
         rfStatus_t writeRegister(uint8_t address, uint8_t buffer);
@@ -17,6 +18,9 @@ class CC1120 {
         rfStatus_t writeRegisterExtended(uint8_t address, uint8_t buffer);
         /* @brief Reads a buffer from the extended register space*/
         rfStatus_t readRegisterExtended(uint8_t address, uint8_t* buffer);
+
+        /* @brief */
+        int FIFOBytesAvailable();
 
         SPIClass& spi;
         SPISettings spiSettings = SPISettings(10000000, SPI_MSBFIRST, SPI_MODE0); // copied from E22 Driver, need to verify
@@ -32,10 +36,23 @@ class CC1120 {
 #define SINGLE_EXTENDED_REGISTER_READ 0xAF
 
 /* configuration registers */
+// benson start
+
+// GPIO Configuration - Most likely default is fine
 #define CC112X_IOCFG3                   0x0000
-#define CC112X_IOCFG2                   0x0001
-#define CC112X_IOCFG1                   0x0002
+/*
+GPIO2: Asserted in RX when PKT_CFG1.CRC_CFG = 1 or 10b and a good
+packet is received. This signal is always on if the radio is in TX or if the
+radio is in RX and PKT_CFG1.CRC_CFG = 0. The signal is de-asserted
+when RX mode is entered and PKT_CFG1.CRC_CFG ≠ 0. This signal is
+also available in the LQI_VAL register
+*/
+#define CC112X_IOCFG2                   0x0001 // only GPIO connected to esp32 (can change pcb to use others if needed)
+#define CC112X_IOCFG1                   0x0002 // shared pin with MISO
 #define CC112X_IOCFG0                   0x0003
+
+// Sync configuration
+// from rust: const SYNC_PATTERN: &[u8] = "1010101010101010101101001110010001".as_bytes();`
 #define CC112X_SYNC3                    0x0004
 #define CC112X_SYNC2                    0x0005
 #define CC112X_SYNC1                    0x0006
@@ -81,8 +98,9 @@ class CC1120 {
 #define CC112X_PKT_LEN                  0x002E
 
 /* Extended Configuration Registers */
-#define CC112X_IF_MIX_CFG               0x2F00
-#define CC112X_FREQOFF_CFG              0x2F01
+/*jennifer*/
+#define CC112X_IF_MIX_CFG               0x04 //only other configuration in datasheet is 0x00
+#define CC112X_FREQOFF_CFG              0x2F01 //0x22 disables PLL feedback, 0x34 / 0x30 enables PLL feedback
 #define CC112X_TOC_CFG                  0x2F02
 #define CC112X_MARC_SPARE               0x2F03
 #define CC112X_ECG_CFG                  0x2F04
