@@ -7,8 +7,10 @@ typedef uint8_t rfStatus_t; // See table 2
 
 class CC1120 {
     public:
-        CC1120(SPIClass& spi, uint8_t pin_cs): spi(spi), pin_cs(pin_cs){}
+        CC1120(SPIClass& spi, uint8_t pin_cs, uint8_t pin_gpio2): spi(spi), pin_cs(pin_cs), pin_gpio2(pin_gpio2){}
         void applyConfiguration();
+        /* @brief Reads the next available packet. Returns 1 if successful */
+        int getNextPacket(uint8_t *packet, uint8_t packet_length);
     private:
         /* @brief Writes a buffer in the register space*/
         rfStatus_t writeRegister(uint8_t address, uint8_t buffer);
@@ -23,21 +25,21 @@ class CC1120 {
         /* @brief Gets the current status */
         rfStatus_t getStatus();
 
-        /* @brief */
-        int FIFOBytesAvailable();
-
         SPIClass& spi;
         SPISettings spiSettings = SPISettings(10000000, SPI_MSBFIRST, SPI_MODE0); // copied from E22 Driver, need to verify
 
         uint8_t pin_cs;
+        uint8_t pin_gpio2;
 };
 
 /* SPI Access Bitmasks */ 
-#define SINGLE_REGISTER_WRITE 0x00
-#define SINGLE_REGISTER_READ 0x80
+#define SINGLE_REGISTER_WRITE           0x00
+#define SINGLE_REGISTER_READ            0x80
 
-#define SINGLE_EXTENDED_REGISTER_WRITE 0x2F
-#define SINGLE_EXTENDED_REGISTER_READ 0xAF
+#define SINGLE_EXTENDED_REGISTER_WRITE  0x2F
+#define SINGLE_EXTENDED_REGISTER_READ   0xAF
+
+#define FIFO_BURST_ACCESS               0x7F
 
 /* configuration registers */
 // benson start
