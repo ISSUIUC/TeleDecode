@@ -18,6 +18,10 @@ class CC1120 {
         rfStatus_t writeRegisterExtended(uint8_t address, uint8_t buffer);
         /* @brief Reads a buffer from the extended register space*/
         rfStatus_t readRegisterExtended(uint8_t address, uint8_t* buffer);
+        /* @brief Sends a command strobe */
+        rfStatus_t sendCommandStrobe(uint8_t command);
+        /* @brief Gets the current status */
+        rfStatus_t getStatus();
 
         /* @brief */
         int FIFOBytesAvailable();
@@ -231,3 +235,18 @@ also available in the LQI_VAL register
 #define CC112X_NUM_RXBYTES              0x2FD7  /* Number of bytes in RXFIFO */
 #define CC112X_FIFO_NUM_TXBYTES         0x2FD8  
 #define CC112X_FIFO_NUM_RXBYTES         0x2FD9  
+
+// #define CC112X_CMD_SRES                 0x30 /* Reset chip (need to tweak sendCommandStrobe to work)*/
+#define CC112X_CMD_SFSTXON              0x31 /* Enable and calibrate frequency synthesizer */
+#define CC112X_CMD_SXOFF                0x32 /* Enter XOFF state when CSn is de-asserted */
+#define CC112X_CMD_SCAL                 0x33 /* Calibrate frequency synthesizer and turn it off.*/
+#define CC112X_CMD_SRX                  0x34 /* Enable RX */
+#define CC112X_CMD_STX                  0x35 /* In IDLE state: Enable TX */
+#define CC112X_CMD_SIDLE                0x36 /* Exit RX/TX, turn off frequency synthesizer and exit eWOR mode if applicable */
+#define CC112X_CMD_SAFC                 0x37 /* Automatic Frequency Compensation */
+#define CC112X_CMD_SWOR                 0x38 /* Start automatic RX polling sequence (eWOR) */
+#define CC112X_CMD_SPWD                 0x39 /* Enter SLEEP mode when CSn is de-asserted */
+#define CC112X_CMD_SFRX                 0x3A /* Flush the RX FIFO */
+#define CC112X_CMD_SFTX                 0x3B /* Flush the TX FIFO */
+#define CC112X_CMD_SWORRST              0x3C /* Reset the eWOR timer to the Event1 value */
+#define CC112X_CMD_SNOP                 0x3D /* No operation. May be used to get access to the chip status byte */

@@ -66,6 +66,24 @@ rfStatus_t CC1120::readRegisterExtended(uint8_t address, uint8_t *buffer)
     return status;
 }
 
+rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
+{
+    SPI.beginTransaction(spiSettings);
+    digitalWrite(pin_cs, LOW);
+
+    rfStatus_t status = SPI.transfer(command);
+
+    digitalWrite(pin_cs, HIGH);
+    SPI.endTransaction();
+
+    return status;
+}
+
+rfStatus_t CC1120::getStatus()
+{
+    return sendCommandStrobe(CC112X_CMD_SNOP);
+}
+
 int CC1120::FIFOBytesAvailable()
 {
     uint8_t buffer;
