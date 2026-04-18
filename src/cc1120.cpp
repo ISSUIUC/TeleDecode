@@ -15,7 +15,7 @@ int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
     }
 
     uint8_t available_bytes; // number of bytes in packet
-    readRegisterExtended(CC112X_NUM_RXBYTES, &available_bytes);
+    readRegister(CC112X_NUM_RXBYTES, &available_bytes);
 
     if (available_bytes < packet_length) {
         return 0; 
@@ -39,6 +39,12 @@ int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
 }
 
 rfStatus_t CC1120::writeRegister(uint8_t address, uint8_t buffer){
+
+    // extended register check
+    if ((address & 0x3f) != address) {
+        return writeRegisterExtended(address, buffer);
+    }
+
     uint8_t header = (address & 0x3f) | SINGLE_REGISTER_WRITE;
 
     SPI.beginTransaction(spiSettings);
@@ -54,6 +60,12 @@ rfStatus_t CC1120::writeRegister(uint8_t address, uint8_t buffer){
 }
 
 rfStatus_t CC1120::readRegister(uint8_t address, uint8_t* buffer){
+
+    // extended register check
+    if ((address & 0x3f) != address) {
+        return readRegisterExtended(address, buffer);
+    }
+
     uint8_t header = (address & 0x3f) | SINGLE_REGISTER_READ; 
 
     SPI.beginTransaction(spiSettings);
@@ -105,6 +117,12 @@ rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
 
     rfStatus_t status = SPI.transfer(command);
 
+    // SRES: CSn pin must be kept low and wait for SO to go low again before the next header byte can be issued
+    if (command == CC112X_CMD_SRES) {
+        // TODO: change to interrupt
+        while (digitalRead(pin_miso) == HIGH) {}
+    }
+
     digitalWrite(pin_cs, HIGH);
     SPI.endTransaction();
 
@@ -119,5 +137,9 @@ rfStatus_t CC1120::getStatus()
 rfStatus_t CC1120::setupRadio() {
     sendCommandStrobe(CC112X_CMD_SRES);
     // Then set the registers
+    for (int i=0; i < sizeof(cc1120_settings) / sizeof(cc1120_settings[0]); i++) {
+        writeRegister(cc1120_settings[i].addr, cc1120_settings[i].data);
+    }
+
     configured = true;
 }

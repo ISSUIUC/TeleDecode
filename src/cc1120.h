@@ -7,7 +7,7 @@ typedef uint8_t rfStatus_t; // See table 2
 
 class CC1120 {
     public:
-        CC1120(SPIClass& spi, uint8_t pin_cs, uint8_t pin_gpio2): spi(spi), pin_cs(pin_cs), pin_gpio2(pin_gpio2){}
+        CC1120(SPIClass& spi, uint8_t pin_cs, uint8_t pin_miso, uint8_t pin_gpio2): spi(spi), pin_cs(pin_cs), pin_miso(pin_miso), pin_gpio2(pin_gpio2){}
         void applyConfiguration();
         /* @brief Reads the next available packet. Returns 1 if successful */
         int getNextPacket(uint8_t *packet, uint8_t packet_length);
@@ -31,6 +31,7 @@ class CC1120 {
         SPISettings spiSettings = SPISettings(10000000, SPI_MSBFIRST, SPI_MODE0); // copied from E22 Driver, need to verify
 
         uint8_t pin_cs;
+        uint8_t pin_miso;
         uint8_t pin_gpio2;
         bool configured = false;
 };
