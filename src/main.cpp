@@ -13,6 +13,8 @@ void init_gpio() {
   pinMode(GPIO_RADIO_INT, INPUT);
   pinMode(SPI_RADIO_CS, OUTPUT);
 }
+
+
 void setup() {
   digitalWrite(GPIO_LED_RED, HIGH);
   SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);

@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "cc1120.h"
 
+#include "cc1120_config.h"
 void CC1120::applyConfiguration() {
 
 }
@@ -113,4 +114,10 @@ rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
 rfStatus_t CC1120::getStatus()
 {
     return sendCommandStrobe(CC112X_CMD_SNOP);
+}
+
+rfStatus_t CC1120::setupRadio() {
+    sendCommandStrobe(CC112X_CMD_SRES);
+    // Then set the registers
+    configured = true;
 }

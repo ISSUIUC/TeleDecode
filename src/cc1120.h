@@ -11,6 +11,8 @@ class CC1120 {
         void applyConfiguration();
         /* @brief Reads the next available packet. Returns 1 if successful */
         int getNextPacket(uint8_t *packet, uint8_t packet_length);
+
+        rfStatus_t setupRadio();
     private:
         /* @brief Writes a buffer in the register space*/
         rfStatus_t writeRegister(uint8_t address, uint8_t buffer);
@@ -30,6 +32,7 @@ class CC1120 {
 
         uint8_t pin_cs;
         uint8_t pin_gpio2;
+        bool configured = false;
 };
 
 /* SPI Access Bitmasks */ 
@@ -238,7 +241,7 @@ also available in the LQI_VAL register
 #define CC112X_FIFO_NUM_TXBYTES         0x2FD8  
 #define CC112X_FIFO_NUM_RXBYTES         0x2FD9  
 
-// #define CC112X_CMD_SRES                 0x30 /* Reset chip (need to tweak sendCommandStrobe to work)*/
+#define CC112X_CMD_SRES                 0x30 /* Reset chip (need to tweak sendCommandStrobe to work)*/
 #define CC112X_CMD_SFSTXON              0x31 /* Enable and calibrate frequency synthesizer */
 #define CC112X_CMD_SXOFF                0x32 /* Enter XOFF state when CSn is de-asserted */
 #define CC112X_CMD_SCAL                 0x33 /* Calibrate frequency synthesizer and turn it off.*/
