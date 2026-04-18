@@ -26,14 +26,14 @@
  ***************************************************************/
 
 #ifndef AO_CC1120_AGC_GAIN_ADJUST
-#define AO_CC1120_AGC_GAIN_ADJUST	-80
+#define AO_CC1120_AGC_GAIN_ADJUST	(uint8_t)-80
 #endif
 
 typedef struct
 {
   uint16_t  addr;
   uint8_t   data;
-}registerSetting_t;
+} registerSetting_t;
 
 
 const registerSetting_t cc1120_settings[] =
@@ -41,21 +41,21 @@ const registerSetting_t cc1120_settings[] =
         {CC112X_SYNC3, 0xD3},       /* Sync Word Configuration [31:24] */
         {CC112X_SYNC2, 0x91},       /* Sync Word Configuration [23:16] */
         {CC112X_SYNC1, 0xD3},       /* Sync Word Configuration [15:8] */
-        {CC112X_SYNC, 0x91},       /* Sync Word Configuration [7:0] */
+        {CC112X_SYNC0, 0x91},       /* Sync Word Configuration [7:0] */
 
         {CC112X_SYNC_CFG1,				   /* Sync Word Detection Configuration */
-		CC1120_SYNC_CFG1_DEM_CFG_PQT_GATING_DISABLED << CC1120_SYNC_CFG1_DEM_CFG |
-		(0xc << CC1120_SYNC_CFG1_SYNC_THR)},
+            (uint8_t)((CC1120_SYNC_CFG1_DEM_CFG_PQT_GATING_DISABLED << CC1120_SYNC_CFG1_DEM_CFG) |
+            (0xc << CC1120_SYNC_CFG1_SYNC_THR))},
         {CC112X_SYNC_CFG0,
-		(CC1120_SYNC_CFG0_SYNC_MODE_16_BITS << CC1120_SYNC_CFG0_SYNC_MODE) |
-		(CC1120_SYNC_CFG0_SYNC_NUM_ERROR_DISABLED << CC1120_SYNC_CFG0_SYNC_NUM_ERROR)},
+            (uint8_t)((CC1120_SYNC_CFG0_SYNC_MODE_16_BITS << CC1120_SYNC_CFG0_SYNC_MODE) |
+            (CC1120_SYNC_CFG0_SYNC_NUM_ERROR_DISABLED << CC1120_SYNC_CFG0_SYNC_NUM_ERROR))},
         {CC112X_DCFILT_CFG,                     0x15},       /* Digital DC Removal Configuration */
         {CC112X_PREAMBLE_CFG1,                         	   /* Preamble Length Configuration */
-		(CC1120_PREAMBLE_CFG1_NUM_PREAMBLE_4_BYTES << CC1120_PREAMBLE_CFG1_NUM_PREAMBLE) |
-		(CC1120_PREAMBLE_CFG1_PREAMBLE_WORD_AA << CC1120_PREAMBLE_CFG1_PREAMBLE_WORD)},
+		(uint8_t)(CC1120_PREAMBLE_CFG1_NUM_PREAMBLE_4_BYTES << CC1120_PREAMBLE_CFG1_NUM_PREAMBLE) |
+		(uint8_t)(CC1120_PREAMBLE_CFG1_PREAMBLE_WORD_AA << CC1120_PREAMBLE_CFG1_PREAMBLE_WORD)},
         {CC112X_PREAMBLE_CFG0,
-		(0 << CC1120_PREAMBLE_CFG0_PQT_EN) |
-		(0xe << CC1120_PREAMBLE_CFG0_PQT)},
+		(uint8_t)((0 << CC1120_PREAMBLE_CFG0_PQT_EN) |
+		(0xe << CC1120_PREAMBLE_CFG0_PQT))},
 
 	/* Adjust PQT lower to accept fewer packets */
 
@@ -64,13 +64,13 @@ const registerSetting_t cc1120_settings[] =
         {CC112X_CHAN_BW,                        0x02},       /* Channel Filter Configuration */
 
         {CC112X_MDMCFG1,                     		   /* General Modem Parameter Configuration */
-		(0 << CC1120_MDMCFG1_CARRIER_SENSE_GATE) |
+		(uint8_t)((0 << CC1120_MDMCFG1_CARRIER_SENSE_GATE) |
 		(1 << CC1120_MDMCFG1_FIFO_EN) |
 		(0 << CC1120_MDMCFG1_MANCHESTER_EN) |
 		(0 << CC1120_MDMCFG1_INVERT_DATA_EN) |
 		(0 << CC1120_MDMCFG1_COLLISION_DETECT_EN) |
 		(CC1120_MDMCFG1_DVGA_GAIN_0 << CC1120_MDMCFG1_DVGA_GAIN) |
-		(0 << CC1120_MDMCFG1_SINGLE_ADC_EN)},
+		(0 << CC1120_MDMCFG1_SINGLE_ADC_EN))},
         {CC112X_MDMCFG0,                        0x0d},       /* General Modem Parameter Configuration */
 
 	/* AGC reference = 10 * log10(receive BW) - 4 = 10 * log10(100e3) - 4 = 46 */
@@ -82,39 +82,39 @@ const registerSetting_t cc1120_settings[] =
                 (uint16_t) AO_CC1120_AGC_GAIN_ADJUST},
 
 	    {CC112X_AGC_CFG3,                              	   /* AGC Configuration */
-		(1 << CC1120_AGC_CFG3_RSSI_STEP_THR) |
-		(17 << CC1120_AGC_CFG3_AGC_MIN_GAIN)},
+		(uint8_t)((1 << CC1120_AGC_CFG3_RSSI_STEP_THR) |
+		(17 << CC1120_AGC_CFG3_AGC_MIN_GAIN))},
 
         {CC112X_AGC_CFG2,       				   /* AGC Configuration */
-		(0 << CC1120_AGC_CFG2_START_PREVIOUS_GAIN_EN) |
+		(uint8_t)((0 << CC1120_AGC_CFG2_START_PREVIOUS_GAIN_EN) |
 		(CC1120_AGC_CFG2_FE_PERFORMANCE_MODE_NORMAL << CC1120_AGC_CFG2_FE_PERFORMANCE_MODE) |
-		(0 << CC1120_AGC_CFG2_AGC_MAX_GAIN)},
+		(0 << CC1120_AGC_CFG2_AGC_MAX_GAIN))},
 
         {CC112X_AGC_CFG1,       				   /* AGC Configuration */
-		(CC1120_AGC_CFG1_AGC_SYNC_BEHAVIOR_UPDATE_AGC_UPDATE_RSSI_SLOW << CC1120_AGC_CFG1_AGC_SYNC_BEHAVIOR) |
+		(uint8_t)((CC1120_AGC_CFG1_AGC_SYNC_BEHAVIOR_UPDATE_AGC_UPDATE_RSSI_SLOW << CC1120_AGC_CFG1_AGC_SYNC_BEHAVIOR) |
 		(CC1120_AGC_CFG1_AGC_WIN_SIZE_32 << CC1120_AGC_CFG1_AGC_WIN_SIZE) |
-		(CC1120_AGC_CFG1_AGC_SETTLE_WAIT_32 << CC1120_AGC_CFG1_AGC_SETTLE_WAIT)},
+		(CC1120_AGC_CFG1_AGC_SETTLE_WAIT_32 << CC1120_AGC_CFG1_AGC_SETTLE_WAIT))},
 
         {CC112X_AGC_CFG0,       				   /* AGC Configuration */
-		(CC1120_AGC_CFG0_AGC_HYST_LEVEL_10 << CC1120_AGC_CFG0_AGC_HYST_LEVEL) |
+		(uint8_t)((CC1120_AGC_CFG0_AGC_HYST_LEVEL_10 << CC1120_AGC_CFG0_AGC_HYST_LEVEL) |
 		(CC1120_AGC_CFG0_AGC_SLEWRATE_LIMIT_60 << CC1120_AGC_CFG0_AGC_SLEWRATE_LIMIT) |
 		(CC1120_AGC_CFG0_RSSI_VALID_CNT_9 << CC1120_AGC_CFG0_RSSI_VALID_CNT) |
-		(CC1120_AGC_CFG0_AGC_ASK_DECAY_1_128 << CC1120_AGC_CFG0_AGC_ASK_DECAY)},
+		(CC1120_AGC_CFG0_AGC_ASK_DECAY_1_128 << CC1120_AGC_CFG0_AGC_ASK_DECAY))},
 
         {CC112X_FIFO_CFG,		       		   /* FIFO Configuration */
-		(0 << CC1120_FIFO_CFG_CRC_AUTOFLUSH) |
-		(0x40 << CC1120_FIFO_CFG_FIFO_THR)},
+		(uint8_t)((0 << CC1120_FIFO_CFG_CRC_AUTOFLUSH) |
+		(0x40 << CC1120_FIFO_CFG_FIFO_THR))},
 
         {CC112X_DEV_ADDR,                       0x00},       /* Device Address Configuration */
 
         {CC112X_SETTLING_CFG,                          	   /* Frequency Synthesizer Calibration and Settling Configuration */
-		(CC1120_SETTLING_CFG_FS_AUTOCAL_IDLE_TO_ON << CC1120_SETTLING_CFG_FS_AUTOCAL) |
+		(uint8_t)((CC1120_SETTLING_CFG_FS_AUTOCAL_IDLE_TO_ON << CC1120_SETTLING_CFG_FS_AUTOCAL) |
 		(CC1120_SETTLING_CFG_LOCK_TIME_75_30 << CC1120_SETTLING_CFG_LOCK_TIME) |
-		(CC1120_SETTLING_CFG_FSREG_TIME_60 << CC1120_SETTLING_CFG_FSREG_TIME)},
+		(CC1120_SETTLING_CFG_FSREG_TIME_60 << CC1120_SETTLING_CFG_FSREG_TIME))},
 
         {CC112X_FS_CFG,                                	   /* Frequency Synthesizer Configuration */
-		(1 << CC1120_FS_CFG_LOCK_EN) |
-		(CC1120_FS_CFG_FSD_BANDSELECT_410_480 << CC1120_FS_CFG_FSD_BANDSELECT)},
+		(uint8_t)((1 << CC1120_FS_CFG_LOCK_EN) |
+		(CC1120_FS_CFG_FSD_BANDSELECT_410_480 << CC1120_FS_CFG_FSD_BANDSELECT))},
 
         {CC112X_WOR_CFG1,                       0x08},       /* eWOR Configuration, Reg 1 */
         {CC112X_WOR_CFG0,                       0x21},       /* eWOR Configuration, Reg 0 */
