@@ -55,7 +55,7 @@
  *  - The actual stack memory to use
  *  - A handle to reference the task with
  *  - The core to pin the task to
- */
+*/
 
 /**
  * @brief Delays the running thread.
