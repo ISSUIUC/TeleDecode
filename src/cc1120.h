@@ -11,20 +11,17 @@ typedef uint8_t rfStatus_t; // See table 2
 class CC1120 {
     public:
         CC1120(SPIClass& spi, uint8_t pin_cs, uint8_t pin_miso, uint8_t pin_gpio2): spi(spi), pin_cs(pin_cs), pin_miso(pin_miso), pin_gpio2(pin_gpio2){}
-        void applyConfiguration();
+        void applyConfiguration(const registerSetting_t *regs, int num_regs);
         /* @brief Reads the next available packet. Returns 1 if successful */
         int getNextPacket(uint8_t *packet, uint8_t packet_length);
 
         rfStatus_t setupRadio();
     private:
-        /* @brief Writes a buffer in the register space*/
-        rfStatus_t writeRegister(uint8_t address, uint8_t buffer);
-        /* @brief Reads a buffer from the register space*/
-        rfStatus_t readRegister(uint8_t address, uint8_t* buffer);
-        /* @brief Writes a buffer in the extended register space*/
-        rfStatus_t writeRegisterExtended(uint8_t address, uint8_t buffer);
-        /* @brief Reads a buffer from the extended register space*/
-        rfStatus_t readRegisterExtended(uint8_t address, uint8_t* buffer);
+        rfStatus_t setupPacketConfig();
+        /* @brief Writes a buffer in the register space */
+        rfStatus_t writeRegister(uint16_t address, uint8_t buffer);
+        /* @brief Reads a buffer from the register space */
+        rfStatus_t readRegister(uint16_t address, uint8_t* buffer);
         /* @brief Sends a command strobe */
         rfStatus_t sendCommandStrobe(uint8_t command);
         /* @brief Gets the current status */
@@ -314,5 +311,7 @@ also available in the LQI_VAL register
 #define  CC1120_FS_CFG_FSD_BANDSELECT		0
 #define CC1120_EXTENDED_BIT	0x8000
 #define CC1120_SOFT_TX_DATA_CFG	(CC1120_EXTENDED_BIT | 0x05)
+
+#define PACKET_DRATE_M 239914
 
 #endif /* CC1120_H */
