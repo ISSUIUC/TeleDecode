@@ -5,8 +5,9 @@
 #include "pins.h"
 #include "hal.h"
 #include "radio_state.h"
+#include "cc1120.h"
 
-CC1120 radio(SPI, SPI_RADIO_CS, GPIO_RADIO_INT);
+CC1120 radio(SPI, SPI_RADIO_CS, SPI_RADIO_MISO, GPIO_RADIO_INT);
 
 void init_gpio() {
   pinMode(GPIO_LED_RED, OUTPUT);
@@ -26,10 +27,15 @@ DECLARE_THREAD(usb_output, RadioState* state) {
   // Write and read to console
 }
 
+void ARDUINO_ISR_ATTR onRadioInterrupt() {
+  digitalWrite(GPIO_LED_ORANGE, HIGH);
+}
+
 void setup() {
   digitalWrite(GPIO_LED_RED, HIGH);
   SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
   RadioState state;
+  attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
   START_THREAD(radio, SENSOR_CORE, &state, 8);
   START_THREAD(usb_output, DATA_CORE, &state, 8);
   while (true) {
