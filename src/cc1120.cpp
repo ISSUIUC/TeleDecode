@@ -3,8 +3,12 @@
 #include "cc1120.h"
 
 #include "cc1120_config.h"
-void CC1120::applyConfiguration() {
 
+void CC1120::applyConfiguration(const registerSetting_t *regs, int num_regs)
+{
+    for (int i=0; i < num_regs; i++) {
+        writeRegister(cc1120_settings[i].addr, cc1120_settings[i].data);
+    }
 }
 
 int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
@@ -15,7 +19,7 @@ int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
     }
 
     uint8_t available_bytes; // number of bytes in packet
-    readRegisterExtended(CC112X_NUM_RXBYTES, &available_bytes);
+    readRegister(CC112X_NUM_RXBYTES, &available_bytes);
 
     if (available_bytes < packet_length) {
         return 0; 
@@ -38,44 +42,23 @@ int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
     return 1;
 }
 
-rfStatus_t CC1120::writeRegister(uint8_t address, uint8_t buffer){
-    uint8_t header = (address & 0x3f) | SINGLE_REGISTER_WRITE;
-
-    SPI.beginTransaction(spiSettings);
-    digitalWrite(pin_cs, LOW);
-
-    rfStatus_t status = SPI.transfer(header);
-    SPI.transfer(buffer);
-
-    digitalWrite(pin_cs, HIGH);
-    SPI.endTransaction();
-
-    return status;
-}
-
-rfStatus_t CC1120::readRegister(uint8_t address, uint8_t* buffer){
-    uint8_t header = (address & 0x3f) | SINGLE_REGISTER_READ; 
-
-    SPI.beginTransaction(spiSettings);
-    digitalWrite(pin_cs, LOW);
-
-    rfStatus_t status = SPI.transfer(header);
-    *buffer = SPI.transfer(0x00);
-
-    digitalWrite(pin_cs, HIGH);
-    SPI.endTransaction();
-
-    return status;
-}
-
-rfStatus_t CC1120::writeRegisterExtended(uint8_t address, uint8_t buffer)
+rfStatus_t CC1120::writeRegister(uint16_t address, uint8_t buffer)
 {
     SPI.beginTransaction(spiSettings);
     digitalWrite(pin_cs, LOW);
 
-    rfStatus_t status = SPI.transfer(SINGLE_EXTENDED_REGISTER_WRITE);
-    SPI.transfer(address);
-    SPI.transfer(buffer);
+    // normal register range
+    if (address & 0x3f == address) {
+        uint8_t header = ((uint8_t) address) | SINGLE_REGISTER_WRITE;
+        SPI.transfer(header);
+    }
+    // extended register range
+    else {
+        SPI.transfer(SINGLE_EXTENDED_REGISTER_WRITE);
+        SPI.transfer((uint8_t) address);
+    }
+
+    rfStatus_t status = SPI.transfer(buffer);
 
     digitalWrite(pin_cs, HIGH);
     SPI.endTransaction();
@@ -83,14 +66,23 @@ rfStatus_t CC1120::writeRegisterExtended(uint8_t address, uint8_t buffer)
     return status;
 }
 
-rfStatus_t CC1120::readRegisterExtended(uint8_t address, uint8_t *buffer)
+rfStatus_t CC1120::readRegister(uint16_t address, uint8_t *buffer)
 {
     SPI.beginTransaction(spiSettings);
     digitalWrite(pin_cs, LOW);
 
-    rfStatus_t status = SPI.transfer(SINGLE_EXTENDED_REGISTER_WRITE);
-    SPI.transfer(address);
-    *buffer = SPI.transfer(0x00);
+    // normal register range
+    if (address & 0x3f == address) {
+        uint8_t header = ((uint8_t) address) | SINGLE_REGISTER_READ; 
+        SPI.transfer(header);
+    }
+    // extended register range
+    else {
+        SPI.transfer(SINGLE_EXTENDED_REGISTER_READ);
+        SPI.transfer((uint8_t) address);
+    }
+
+    rfStatus_t status = *buffer = SPI.transfer(0x00);
 
     digitalWrite(pin_cs, HIGH);
     SPI.endTransaction();
@@ -119,7 +111,15 @@ rfStatus_t CC1120::getStatus()
 rfStatus_t CC1120::setupRadio() {
     sendCommandStrobe(CC112X_CMD_SRES);
     // Then set the registers
+    applyConfiguration(cc1120_settings, sizeof(cc1120_settings) / sizeof(cc1120_settings[0]));
+
     configured = true;
+}
+
+rfStatus_t CC1120::setupPacketConfig() {
+    // assume 38400 because it is the default for altos
+    applyConfiguration(packet_setup, sizeof(packet_setup) / sizeof(packet_setup[0]));
+    applyConfiguration(packet_setup_384, sizeof(packet_setup_384) / sizeof(packet_setup_384[0]));
 }
 
 uint8_t ao_radio_recv(void *d, uint8_t size, uint16_t timeout)

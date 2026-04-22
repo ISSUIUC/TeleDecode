@@ -232,3 +232,28 @@ const registerSetting_t cc1120_settings[] =
         {CC112X_RXLAST,                         0x00},       /* RX FIFO Pointer (last entry) */
         {CC112X_TXLAST,                         0x00},       /* TX FIFO Pointer (last entry) */
 };
+
+const registerSetting_t packet_setup[] = {
+    {CC112X_SYMBOL_RATE1, (PACKET_DRATE_M >> 8) & 0xff},
+    {CC112X_SYMBOL_RATE0, (PACKET_DRATE_M >> 0) & 0xff},
+    {CC112X_PKT_CFG2, 0x00},
+    {CC112X_PKT_CFG1, 0x00},
+    {CC112X_PKT_CFG0, 0x00},
+    {CC112X_PREAMBLE_CFG1, (6 << 2)}
+};
+
+const registerSetting_t packet_setup_384[] = {
+    {CC112X_DEVIATION_M, 80}, 
+    {CC112X_MODCFG_DEV_E, ((0 << 6) | (1 << 3) | (5 << 0))}, /* Modem mode normal, 2-GFSK */
+    {CC112X_SYMBOL_RATE2, ((9 << 4) | (((PACKET_DRATE_M >> 16) & 0xf) << 0))},
+    {CC112X_CHAN_BW, ((0 << 7) | (0 << 6) | (2 << 0))}, 
+    {CC112X_PA_CFG0, 0x7b}
+};
+
+const registerSetting_t packet_setup_96[] = {
+    {CC112X_DEVIATION_M, 80}, 
+    {CC112X_MODCFG_DEV_E, ((0 << 6) | (1 << 3) | (3 << 0))}, /* Modem mode normal, 2-GFSK */
+    {CC112X_SYMBOL_RATE2, ((7 << 4) | (((PACKET_DRATE_M >> 16) & 0xf) << 0))},
+    {CC112X_CHAN_BW, ((0 << 7) | (0 << 6) | (10 << 0))}, 
+    {CC112X_PA_CFG0, 0x7d}
+};
