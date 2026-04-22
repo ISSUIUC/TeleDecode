@@ -1,4 +1,7 @@
 // Based on datasheet: https://www.ti.com/lit/ug/swru295e/swru295e.pdf
+#ifndef CC1120_H
+#define CC1120_H
+
 #include <stdint.h>
 #include <SPI.h>
 
@@ -311,3 +314,5 @@ also available in the LQI_VAL register
 #define  CC1120_FS_CFG_FSD_BANDSELECT		0
 #define CC1120_EXTENDED_BIT	0x8000
 #define CC1120_SOFT_TX_DATA_CFG	(CC1120_EXTENDED_BIT | 0x05)
+
+#endif /* CC1120_H */
