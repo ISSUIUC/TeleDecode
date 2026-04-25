@@ -15,14 +15,14 @@ int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
 {
     // TODO: verify GPIO2 is configured to CRC_OK
     if (!digitalRead(pin_gpio2)) {
-        return 0; // no packet available
+        return -1; // no packet available
     }
 
     uint8_t available_bytes; // number of bytes in packet
     readRegister(CC112X_NUM_RXBYTES, &available_bytes);
 
     if (available_bytes < packet_length) {
-        return 0; 
+        return -1; 
     }
 
     // RX FIFO burst access
@@ -39,7 +39,7 @@ int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
     digitalWrite(pin_cs, HIGH);
     SPI.endTransaction();
 
-    return 1;
+    return 0;
 }
 
 rfStatus_t CC1120::writeRegister(uint16_t address, uint8_t buffer)
@@ -120,6 +120,12 @@ rfStatus_t CC1120::setupPacketConfig() {
     // assume 38400 because it is the default for altos
     applyConfiguration(packet_setup, sizeof(packet_setup) / sizeof(packet_setup[0]));
     applyConfiguration(packet_setup_384, sizeof(packet_setup_384) / sizeof(packet_setup_384[0]));
+}
+
+rfStatus_t CC1120::setFrequency(const uint32_t radio_setting) {
+    writeRegister(CC112X_FREQ2, (uint8_t) (radio_setting >> 16));
+    writeRegister(CC112X_FREQ1, (uint8_t) (radio_setting >> 8));
+    writeRegister(CC112X_FREQ0, (uint8_t) (radio_setting));
 }
 
 uint8_t ao_radio_recv(void *d, uint8_t size, uint16_t timeout)

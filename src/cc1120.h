@@ -15,6 +15,8 @@ class CC1120 {
         /* @brief Reads the next available packet. Returns 1 if successful */
         int getNextPacket(uint8_t *packet, uint8_t packet_length);
 
+        rfStatus_t setFrequency(const uint32_t radio_setting);
+
         rfStatus_t setupRadio();
     private:
         rfStatus_t setupPacketConfig();

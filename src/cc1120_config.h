@@ -120,8 +120,8 @@ const registerSetting_t cc1120_settings[] =
         {CC112X_WOR_CFG0,                       0x21},       /* eWOR Configuration, Reg 0 */
         {CC112X_WOR_EVENT0_MSB,                 0x00},       /* Event 0 Configuration */
         {CC112X_WOR_EVENT0_LSB,                 0x00},       /* Event 0 Configuration */
+        {CC112X_PKT_CFG2,                       0x00},       /* Packet Configuration, Reg 2 */
 #if 0
-        {CC112X_PKT_CFG2,                       0x04},       /* Packet Configuration, Reg 2 */
         {CC112X_PKT_CFG1,                       0x45},       /* Packet Configuration, Reg 1 */
         {CC112X_PKT_CFG0,                       0x00},       /* Packet Configuration, Reg 0 */
 #endif
