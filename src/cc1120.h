@@ -14,6 +14,7 @@ class CC1120 {
         void applyConfiguration(const registerSetting_t *regs, int num_regs);
         /* @brief Reads the next available packet. Returns 1 if successful */
         int getNextPacket(uint8_t *packet, uint8_t packet_length);
+        int recvPacket(uint8_t *packet, uint8_t packet_length, int32_t timeout);
 
         rfStatus_t setFrequency(const uint32_t radio_setting);
 
@@ -50,6 +51,7 @@ class CC1120 {
 /* configuration registers */
 // benson start
 
+#define CC112x_MAX_RECV                 64
 // GPIO Configuration - Most likely default is fine
 #define CC112X_IOCFG3                   0x0000
 /*
@@ -313,6 +315,27 @@ also available in the LQI_VAL register
 #define  CC1120_FS_CFG_FSD_BANDSELECT		0
 #define CC1120_EXTENDED_BIT	0x8000
 #define CC1120_SOFT_TX_DATA_CFG	(CC1120_EXTENDED_BIT | 0x05)
+
+#define CC1120_WOR_CFG1		0x22
+#define CC1120_WOR_CFG0		0x23
+#define CC1120_WOR_EVENT0_MSB	0x24
+#define CC1120_WOR_EVENT0_LSB	0x25
+#define CC1120_PKT_CFG2		0x26
+#define  CC1120_PKT_CFG2_CCA_MODE	2
+#define  CC1120_PKT_CFG2_CCA_MODE_ALWAYS_CLEAR		0
+#define  CC1120_PKT_CFG2_CCA_MODE_RSSI_THRESHOLD	1
+#define  CC1120_PKT_CFG2_CCA_MODE_NOT_RECEIVING		2
+#define  CC1120_PKT_CFG2_CCA_MODE_RSSI_OR_NOT		3
+#define  CC1120_PKT_CFG2_CCA_MODE_RSSI_AND_ETSI_LBT	4
+#define  CC1120_PKT_CFG2_CCA_MODE_MASK			7
+#define  CC1120_PKT_CFG2_PKT_FORMAT	0
+#define  CC1120_PKT_CFG2_PKT_FORMAT_NORMAL		0
+#define  CC1120_PKT_CFG2_PKT_FORMAT_SYNCHRONOUS_SERIAL	1
+#define  CC1120_PKT_CFG2_PKT_FORMAT_RANDOM		2
+#define  CC1120_PKT_CFG2_PKT_FORMAT_TRANSPARENT_SERIAL	3
+#define  CC1120_PKT_CFG2_PKT_FORMAT_MASK		3
+
+#define  CC1120_IOCFG_GPIO_CFG_CLKEN_SOFT	29
 
 #define PACKET_DRATE_M 239914
 

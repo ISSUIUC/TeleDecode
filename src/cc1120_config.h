@@ -257,3 +257,11 @@ const registerSetting_t packet_setup_96[] = {
     {CC112X_CHAN_BW, ((0 << 7) | (0 << 6) | (10 << 0))}, 
     {CC112X_PA_CFG0, 0x7d}
 };
+
+const registerSetting_t packet_rx_setup[] = {
+    CC112X_PKT_CFG2,	((CC1120_PKT_CFG2_CCA_MODE_ALWAYS_CLEAR << CC1120_PKT_CFG2_CCA_MODE) |
+				 (CC1120_PKT_CFG2_PKT_FORMAT_SYNCHRONOUS_SERIAL << CC1120_PKT_CFG2_PKT_FORMAT))
+
+    // TODO: Set interrupt thingies
+    // AO_CC1120_INT_GPIO_IOCFG, 		CC1120_IOCFG_GPIO_CFG_CLKEN_SOFT,
+};

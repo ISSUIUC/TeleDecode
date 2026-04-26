@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <Arduino.h>
 #include "cc1120.h"
+#include "ao.h"
 
 #include "cc1120_config.h"
 
@@ -126,6 +127,46 @@ rfStatus_t CC1120::setFrequency(const uint32_t radio_setting) {
     writeRegister(CC112X_FREQ2, (uint8_t) (radio_setting >> 16));
     writeRegister(CC112X_FREQ1, (uint8_t) (radio_setting >> 8));
     writeRegister(CC112X_FREQ0, (uint8_t) (radio_setting));
+}
+
+int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) {
+    uint8_t		len;
+	uint8_t		radio_rssi = 0;
+	uint8_t		rssi0;
+	uint8_t		ret;
+    packet_length -= 2;
+    uint8_t rx_data[(CC112x_MAX_RECV + 4) * 2 * 8];
+    if (packet_length > CC112x_MAX_RECV) {
+		return 0;
+	}
+
+    len = packet_length + 2;			/* CRC bytes */
+	len += (uint8_t) (1 + ~(len & 1)); /* 1 or two pad bytes */
+	len *= 2;			/* 1/2 rate convolution */
+
+    writeRegister(CC112X_PKT_LEN, len);
+    applyConfiguration(packet_rx_setup, 1);
+    writeRegister(CC112X_IOCFG2, CC1120_IOCFG_GPIO_CFG_CLKEN_SOFT);
+    sendCommandStrobe(CC112X_CMD_SRX);
+    // Then we should check for stuff
+
+    while (timeout > 0) {
+        if (digitalRead(pin_gpio2) == LOW) {
+            // Then we got something
+            break;
+        }
+        timeout -= 1;
+        delay(1);
+    }
+
+    // Then we can read?
+    // Check if pin 
+    if (getNextPacket(rx_data, len) == 0) {
+        // Then we succeeded in reading so we decode fec
+        int ret = ao_fec_decode(rx_data, len, packet, packet_length + 2, NULL);
+    } else {
+        // Error?
+    }
 }
 
 uint8_t ao_radio_recv(void *d, uint8_t size, uint16_t timeout)

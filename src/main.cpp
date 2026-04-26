@@ -19,23 +19,25 @@ void init_gpio() {
 }
 
 DECLARE_THREAD(radio, RadioState* state) {
-  // Read all our data and stuff  
+  // Read all our data and stuff
 }
 
 
 DECLARE_THREAD(usb_output, RadioState* state) {
   // Write and read to console
+  
 }
 
 void ARDUINO_ISR_ATTR onRadioInterrupt() {
   digitalWrite(GPIO_LED_ORANGE, HIGH);
+  digitalWrite(GPIO_LED_ORANGE, LOW);
 }
 
 void setup() {
   digitalWrite(GPIO_LED_RED, HIGH);
   SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
   RadioState state;
-  attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
+  // attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
   START_THREAD(radio, SENSOR_CORE, &state, 8);
   START_THREAD(usb_output, DATA_CORE, &state, 8);
   while (true) {
@@ -47,3 +49,4 @@ void loop() {
   // Nah
   // This should never happen
 }
+
