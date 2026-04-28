@@ -34,19 +34,21 @@ void ARDUINO_ISR_ATTR onRadioInterrupt() {
 }
 
 void setup() {
-  digitalWrite(GPIO_LED_RED, HIGH);
-  SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
-  RadioState state;
-  // attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
-  START_THREAD(radio, SENSOR_CORE, &state, 8);
-  START_THREAD(usb_output, DATA_CORE, &state, 8);
-  while (true) {
-    THREAD_SLEEP(1000);
-  }
+  Serial.begin(9600);
+  // digitalWrite(GPIO_LED_RED, HIGH);
+  // SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
+  // RadioState state;
+  // // attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
+  // START_THREAD(radio, SENSOR_CORE, &state, 8);
+  // START_THREAD(usb_output, DATA_CORE, &state, 8);
+  // while (true) {
+  //   THREAD_SLEEP(1000);
+  // }
 }
 
 void loop() {
   // Nah
+  Serial.println("hello world!");
   // This should never happen
 }
 

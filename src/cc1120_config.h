@@ -1,5 +1,7 @@
+#pragma once
+#include "cc1120_defines.h"
+
 #include <Arduino.h>
-#include "cc1120.h"
 
 
 /* RX filter BW = 100.000000 */
