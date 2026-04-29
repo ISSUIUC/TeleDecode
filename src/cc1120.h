@@ -21,7 +21,9 @@ class CC1120 {
         rfStatus_t setFrequency(const uint32_t radio_setting);
 
         rfStatus_t setupRadio();
-    private:
+
+        rfStatus_t getStatus();
+
         rfStatus_t setupPacketConfig();
         /* @brief Writes a buffer in the register space */
         rfStatus_t writeRegister(uint16_t address, uint8_t buffer);
@@ -30,8 +32,8 @@ class CC1120 {
         /* @brief Sends a command strobe */
         rfStatus_t sendCommandStrobe(uint8_t command);
         /* @brief Gets the current status */
-        rfStatus_t getStatus();
 
+    private:
         SPIClass& spi;
         SPISettings spiSettings = SPISettings(10000000, SPI_MSBFIRST, SPI_MODE0); // copied from E22 Driver, need to verify
 

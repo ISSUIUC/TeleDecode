@@ -35,8 +35,9 @@ void ARDUINO_ISR_ATTR onRadioInterrupt() {
 
 void setup() {
   Serial.begin(9600);
-  // digitalWrite(GPIO_LED_RED, HIGH);
-  // SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
+  init_gpio();
+  Serial.println("Boot");
+  SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
   // RadioState state;
   // // attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
   // START_THREAD(radio, SENSOR_CORE, &state, 8);
@@ -44,11 +45,18 @@ void setup() {
   // while (true) {
   //   THREAD_SLEEP(1000);
   // }
+
+  digitalWrite(GPIO_LED_RED, HIGH);
+  digitalWrite(GPIO_LED_BLUE, HIGH);
+  digitalWrite(GPIO_LED_GREEN, HIGH);
+  digitalWrite(GPIO_LED_ORANGE, HIGH);
+  radio.sendCommandStrobe(CC112X_CMD_SRES);
 }
 
 void loop() {
   // Nah
-  Serial.println("hello world!");
+  Serial.println(radio.getStatus());
+  
   // This should never happen
 }
 

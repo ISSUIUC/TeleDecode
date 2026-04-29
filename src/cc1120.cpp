@@ -93,13 +93,13 @@ rfStatus_t CC1120::readRegister(uint16_t address, uint8_t *buffer)
 
 rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
 {
-    SPI.beginTransaction(spiSettings);
     digitalWrite(pin_cs, LOW);
+    SPI.beginTransaction(spiSettings);
 
     rfStatus_t status = SPI.transfer(command);
 
-    digitalWrite(pin_cs, HIGH);
     SPI.endTransaction();
+    digitalWrite(pin_cs, HIGH);
 
     return status;
 }
