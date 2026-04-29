@@ -1,8 +1,17 @@
 #include <SPI.h>
 #include <Arduino.h>
 #include "cc1120.h"
-
 #include "cc1120_config.h"
+
+#define AO_RADIO_MAX_SEND	sizeof(struct ao_packet)
+#define AO_CC1120_TX_BUFFER	64
+
+
+static uint8_t ao_radio_wake;		/* radio ready. Also used as sleep address */
+static uint8_t ao_radio_abort;		/* radio operation should abort */
+static uint8_t ao_radio_mcu_wake;	/* MARC status change */
+static uint8_t ao_radio_tx_finished;
+
 void CC1120::applyConfiguration() {
 
 }
@@ -122,10 +131,54 @@ rfStatus_t CC1120::setupRadio() {
     configured = true;
 }
 
-uint8_t ao_radio_recv(void *d, uint8_t size, uint16_t timeout)
+
+static uint8_t	tx_data[(AO_RADIO_MAX_SEND + 4) * 2];
+void CC1120::ao_radio_send(const void *d, uint8_t size)
 {
-    uint8_t		len;
-	uint8_t		radio_rssi = 0;
-	uint8_t		rssi0;
-	uint8_t		ret;
+    //uint8_t		*e = tx_data;
+	uint8_t		encode_len;
+	uint8_t		this_len;
+	uint8_t		started = 0;
+
+    encode_len = size; //ao_fec_encode(d, size, tx_data);
+
+	// ao_radio_get(encode_len);
+
+	ao_radio_abort = 0;
+
+	/* Flush any pending TX bytes */
+	sendCommandStrobe(CC1120_SFTX); 
+
+	// while (encode_len) { //not necessary untilwe start sending multiple packets
+	// 	this_len = encode_len;
+
+	// 	if (started) {
+	// 		ao_radio_wait_fifo();
+	// 		if (ao_radio_abort)
+	// 			break;
+	// 	}
+
+    if (this_len > AO_CC1120_TX_BUFFER) { 
+		this_len = AO_CC1120_TX_BUFFER;
+		writeRegister(CC112X_IOCFG2, 2);
+	} else {
+		writeRegister(CC112X_IOCFG2, 26);
+	}
+
+	//ao_radio_fifo_write(e, this_len);
+	//e += this_len;
+		// encode_len -= this_len;
+
+	// if (!started) {
+	// 	ao_radio_start_tx();
+	// 	started = 1;
+	// }
+	// while (started && !ao_radio_abort && !ao_radio_tx_finished) {
+	// 	ao_radio_wake = 0;
+	// 	ao_radio_enable_isr();
+	// 	ao_radio_wait_isr(0);
+	// }
+	// if (ao_radio_abort)
+	// 	ao_radio_idle();
+	// ao_radio_put();
 }

@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <SPI.h>
 
+#define ao_arch_block_interrupts()	cli()
+#define AO_TICK_TYPE	uint16_t
 // TODO: Add state definitions (See table 2)
 typedef uint8_t rfStatus_t; // See table 2
 
@@ -16,6 +18,8 @@ class CC1120 {
         int getNextPacket(uint8_t *packet, uint8_t packet_length);
 
         rfStatus_t setupRadio();
+
+                void ao_radio_send(const void *d, uint8_t size);
     private:
         /* @brief Writes a buffer in the register space*/
         rfStatus_t writeRegister(uint8_t address, uint8_t buffer);
@@ -30,14 +34,26 @@ class CC1120 {
         /* @brief Gets the current status */
         rfStatus_t getStatus();
 
+
+
         SPIClass& spi;
         SPISettings spiSettings = SPISettings(10000000, SPI_MSBFIRST, SPI_MODE0); // copied from E22 Driver, need to verify
 
         uint8_t pin_cs;
         uint8_t pin_miso;
         uint8_t pin_gpio2;
+        uint8_t ao_fec_encode(const uint8_t *in, uint8_t len, uint8_t *out);
+        uint8_t ao_sleep_for(void *wchan, AO_TICK_TYPE timeout);
         bool configured = false;
 };
+
+
+
+
+#define CC1120_READ	(7)
+#define CC1120_BURST	(6)
+#define CC1120_FIFO		0x3f
+#define CC1120_IS_EXTENDED(r)	((r) & CC1120_EXTENDED_BIT)
 
 /* SPI Access Bitmasks */ 
 #define SINGLE_REGISTER_WRITE           0x00
@@ -112,6 +128,7 @@ also available in the LQI_VAL register
 
 /* Extended Configuration Registers */
 /*jennifer*/
+#define CC1120_EXTENDED	0x2f
 #define CC112X_IF_MIX_CFG               0x04 //only other configuration in datasheet is 0x00
 #define CC112X_FREQOFF_CFG              0x2F01 //0x22 disables PLL feedback, 0x34 / 0x30 enables PLL feedback
 #define CC112X_TOC_CFG                  0x2F02
@@ -315,4 +332,5 @@ also available in the LQI_VAL register
 #define CC1120_EXTENDED_BIT	0x8000
 #define CC1120_SOFT_TX_DATA_CFG	(CC1120_EXTENDED_BIT | 0x05)
 
+#define CC1120_SFTX		0x3b //command strobe to flush tx fifo
 #endif /* CC1120_H */

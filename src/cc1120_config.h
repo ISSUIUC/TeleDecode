@@ -35,6 +35,14 @@ typedef struct
   uint8_t   data;
 } registerSetting_t;
 
+struct ao_packet {
+	uint8_t		addr;
+	uint8_t		len;
+	uint8_t		seq;
+	uint8_t		ack;
+	uint8_t		d[64];
+	uint8_t		callsign[8];
+};
 
 const registerSetting_t cc1120_settings[] =
 {
