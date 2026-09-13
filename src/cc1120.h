@@ -35,7 +35,7 @@ class CC1120 {
 
     private:
         SPIClass& spi;
-        SPISettings spiSettings = SPISettings(10000000, SPI_MSBFIRST, SPI_MODE0); // copied from E22 Driver, need to verify
+        SPISettings spiSettings = SPISettings(100000, SPI_MSBFIRST, SPI_MODE0); // copied from E22 Driver, need to verify
 
         uint8_t pin_cs;
         uint8_t pin_miso;

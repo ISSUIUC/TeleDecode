@@ -99,6 +99,14 @@ rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
     rfStatus_t status = SPI.transfer(command);
 
     SPI.endTransaction();
+
+    // if (command == CC112X_CMD_SRES) {
+    //     while (digitalRead(pin_miso)) {
+    //         Serial.println("CC1120 Reset Not Ready");
+    //         sleep(0.02);
+    //     }
+    // }
+
     digitalWrite(pin_cs, HIGH);
 
     return status;
