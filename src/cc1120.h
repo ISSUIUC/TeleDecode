@@ -34,6 +34,10 @@ class CC1120 {
         /* @brief Gets the current status */
 
     private:
+        static inline bool registerInNormalRange(uint16_t address) {
+            return (address & 0x3f) == address;
+        }
+        
         SPIClass& spi;
         SPISettings spiSettings = SPISettings(10000000, SPI_MSBFIRST, SPI_MODE0); // copied from E22 Driver, need to verify
 
