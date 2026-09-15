@@ -73,7 +73,7 @@ rfStatus_t CC1120::readRegister(uint16_t address, uint8_t *buffer)
     digitalWrite(pin_cs, LOW);
 
     // normal register range
-    if (CC1120::registerInNormalRange(address))) {
+    if (CC1120::registerInNormalRange(address)) {
         uint8_t header = ((uint8_t) address) | SINGLE_REGISTER_READ; 
         SPI.transfer(header);
     }
