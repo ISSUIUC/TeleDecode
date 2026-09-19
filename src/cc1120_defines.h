@@ -75,7 +75,7 @@ also available in the LQI_VAL register
 
 /* Extended Configuration Registers */
 /*jennifer*/
-#define CC112X_IF_MIX_CFG               0x04 //only other configuration in datasheet is 0x00
+#define CC112X_IF_MIX_CFG               0x2F00 //only other configuration in datasheet is 0x00
 #define CC112X_FREQOFF_CFG              0x2F01 //0x22 disables PLL feedback, 0x34 / 0x30 enables PLL feedback
 #define CC112X_TOC_CFG                  0x2F02
 #define CC112X_MARC_SPARE               0x2F03

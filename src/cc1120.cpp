@@ -8,7 +8,7 @@
 void CC1120::applyConfiguration(const registerSetting_t *regs, int num_regs)
 {
     for (int i=0; i < num_regs; i++) {
-        writeRegister(cc1120_settings[i].addr, cc1120_settings[i].data);
+        writeRegister(regs[i].addr, regs[i].data);
     }
 }
 
@@ -48,15 +48,20 @@ rfStatus_t CC1120::writeRegister(uint16_t address, uint8_t buffer)
     SPI.beginTransaction(spiSettings);
     digitalWrite(pin_cs, LOW);
 
-    // normal register range
-    if (address & 0x3f == address) {
+    // normal register range (upper bits are 0x00)
+    if ((address >> 8) == 0x00) {
         uint8_t header = ((uint8_t) address) | SINGLE_REGISTER_WRITE;
         SPI.transfer(header);
     }
-    // extended register range
-    else {
+    // extended register range (upper bits are 0x2F)
+    else if ((address >> 8) == 0x2F){
         SPI.transfer(SINGLE_EXTENDED_REGISTER_WRITE);
         SPI.transfer((uint8_t) address);
+    }
+
+    else {
+        Serial.println("write register not valid");
+        return 0;
     }
 
     rfStatus_t status = SPI.transfer(buffer);
@@ -72,18 +77,24 @@ rfStatus_t CC1120::readRegister(uint16_t address, uint8_t *buffer)
     SPI.beginTransaction(spiSettings);
     digitalWrite(pin_cs, LOW);
 
+    rfStatus_t status;
+
     // normal register range
-    if (address & 0x3f == address) {
+    if ((address >> 8) == 0x00) {
         uint8_t header = ((uint8_t) address) | SINGLE_REGISTER_READ; 
-        SPI.transfer(header);
+        status = SPI.transfer(header);
     }
     // extended register range
-    else {
+    else if ((address >> 8) == 0x2F){
         SPI.transfer(SINGLE_EXTENDED_REGISTER_READ);
-        SPI.transfer((uint8_t) address);
+        status = SPI.transfer((uint8_t) address);
+    }
+    else {
+        Serial.println("read register not valid");
+        return 0;
     }
 
-    rfStatus_t status = *buffer = SPI.transfer(0x00);
+    *buffer = SPI.transfer(0x00);
 
     digitalWrite(pin_cs, HIGH);
     SPI.endTransaction();
@@ -100,12 +111,12 @@ rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
 
     SPI.endTransaction();
 
-    // if (command == CC112X_CMD_SRES) {
-    //     while (digitalRead(pin_miso)) {
-    //         Serial.println("CC1120 Reset Not Ready");
-    //         sleep(0.02);
-    //     }
-    // }
+    if (command == CC112X_CMD_SRES) {
+        while (digitalRead(pin_miso)) {
+            Serial.println("CC1120 Reset Not Ready");
+            sleep(1);
+        }
+    }
 
     digitalWrite(pin_cs, HIGH);
 
