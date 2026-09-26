@@ -35,9 +35,18 @@ void ARDUINO_ISR_ATTR onRadioInterrupt() {
   digitalWrite(GPIO_LED_ORANGE, HIGH);
   //packet len = 32? could make const
   //could make timeout a const too?
-  int tmp = CC1120::recvPacket(packet, 32, timeout); //this int should indiate whether a packet was received
-  if (tmp == 1) { //1 or wtv value it returns when it is successfully received
+  uint8_t data[AO_PACKET_MAX];
 
+  //(uint8_t*) packet 
+  int tmp = radio.recvPacket(data, 32, 1000); //this int should indiate whether a packet was received
+  if (tmp == 1) { //1 or wtv value it returns when it is successfully received
+    digitalWrite(GPIO_LED_BLUE, HIGH); 
+    delay(2000);
+    digitalWrite(GPIO_LED_BLUE, LOW);
+    //then print the packet to console
+    for (uint8_t b : data) {
+      std::printf("%02x ", b);
+    }
   } 
 
 
@@ -54,6 +63,8 @@ void setup() {
   sleep(1);
   digitalWrite(GPIO_RADIO_RESET_N, HIGH);
 
+  
+
   SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
   // RadioState state;
   // // attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
@@ -62,15 +73,22 @@ void setup() {
   // while (true) {
   //   THREAD_SLEEP(1000);
   // }
+  
 
   digitalWrite(GPIO_LED_RED, HIGH);
   digitalWrite(GPIO_LED_BLUE, HIGH);
   digitalWrite(GPIO_LED_GREEN, HIGH);
   digitalWrite(GPIO_LED_ORANGE, HIGH);
 
+  radio.applyConfiguration(cc1120_settings, 132);
+  // rfStatus_t test = radio.writeRegister(CC112X_SYNC3, 0xD3);
+  // Serial.println(test);
+
   // radio.sendCommandStrobe(CC112X_CMD_SRES);
   // Serial.println("CC1120 Reset Complete");
   // digitalWrite(SPI_RADIO_CS, LOW);
+  
+
 }
 
 void loop() {
@@ -83,9 +101,14 @@ void loop() {
   // }
   // Nah
   // Serial.println(radio.getStatus());
+  // Serial.println(cc1120_settings[40].addr); //doesnt print after 41 for some reason
   uint8_t temp;
-  radio.readRegister(0x2f8f, &temp);
-  Serial.println(temp);
+  rfStatus_t status = radio.readRegister(0x2f8f, &temp);
+  // Serial.println(temp);
+  // Serial.println(status);
+  uint8_t test;
+  radio.readRegister(CC112X_PA_CFG1, &test); //works!
+  Serial.println(test);
 
   if (temp == 0x20) {
     digitalWrite(GPIO_LED_ORANGE, HIGH);

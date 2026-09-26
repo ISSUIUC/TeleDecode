@@ -59,9 +59,7 @@ const registerSetting_t cc1120_settings[] =
 		(uint8_t)((0 << CC1120_PREAMBLE_CFG0_PQT_EN) |
 		(0xe << CC1120_PREAMBLE_CFG0_PQT))},
 
-	/* Adjust PQT lower to accept fewer packets */
-
-        {CC112X_FREQ_IF_CFG,                    0x3a},       /* RX Mixer Frequency Configuration */
+	/* Adjust PQT lower to accept fewer packets */     /* RX Mixer Frequency Configuration */
         {CC112X_IQIC,                           0x00},       /* Digital Image Channel Compensation Configuration */
         {CC112X_CHAN_BW,                        0x02},       /* Channel Filter Configuration */
 
@@ -129,8 +127,7 @@ const registerSetting_t cc1120_settings[] =
 #endif
         {CC112X_RFEND_CFG1,                     0x0e},       /* RFEND Configuration, Reg 1 */
         {CC112X_RFEND_CFG0,                     0x00},       /* RFEND Configuration, Reg 0 */
-	//        CC112X_PA_CFG2,                        0x3f,       /* Power Amplifier Configuration, Reg 2 */
-	    {CC112X_PA_CFG2,                        0x3f},       /* Power Amplifier Configuration, Reg 2 */
+	//        CC112X_PA_CFG2,                        0x3f,       /* Power Amplifier Configuration, Reg 2 */     /* Power Amplifier Configuration, Reg 2 */
         {CC112X_PA_CFG1,     0x56},       /* Power Amplifier Configuration, Reg 1 */
         {CC112X_PA_CFG0,     0x7b},       /* Power Amplifier Configuration, Reg 0 */
         {CC112X_PKT_LEN,     0xff},       /* Packet Length Configuration */
@@ -139,7 +136,6 @@ const registerSetting_t cc1120_settings[] =
         {CC112X_TOC_CFG,      0x0a},       /* Timing Offset Correction Configuration */
         {CC112X_MARC_SPARE,      0x00},       /* MARC Spare */
         {CC112X_ECG_CFG,     0x00},       /* External Clock Frequency Configuration */
-        {CC1120_SOFT_TX_DATA_CFG,      0x00},       /* Soft TX Data Configuration */
         {CC112X_EXT_CTRL,      0x00},       /* External Control Configuration */
         {CC112X_RCCAL_FINE,      0x00},       /* RC Oscillator Calibration (fine) */
         {CC112X_RCCAL_COARSE,      0x00},       /* RC Oscillator Calibration (coarse) */

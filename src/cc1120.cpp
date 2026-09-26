@@ -5,10 +5,11 @@
 
 #include "cc1120_config.h"
 
-void CC1120::applyConfiguration(const registerSetting_t *regs, int num_regs)
+void CC1120::applyConfiguration(const registerSetting_t* regs, int num_regs)
 {
     for (int i=0; i < num_regs; i++) {
-        writeRegister(regs[i].addr, regs[i].data);
+        rfStatus_t status = writeRegister(regs[i].addr, regs[i].data);
+        Serial.println(status);
     }
 }
 
