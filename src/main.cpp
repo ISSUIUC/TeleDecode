@@ -41,10 +41,10 @@ void setup() {
   Serial.println("Boot");
 
   digitalWrite(GPIO_RADIO_RESET_N, LOW);
-  sleep(0.1);
+  sleep(1);
   digitalWrite(GPIO_RADIO_RESET_N, HIGH);
 
-  // SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
+  SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
   // RadioState state;
   // // attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
   // START_THREAD(radio, SENSOR_CORE, &state, 8);
@@ -60,7 +60,7 @@ void setup() {
 
   // radio.sendCommandStrobe(CC112X_CMD_SRES);
   // Serial.println("CC1120 Reset Complete");
-  digitalWrite(SPI_RADIO_CS, LOW);
+  // digitalWrite(SPI_RADIO_CS, LOW);
 }
 
 void loop() {
@@ -72,9 +72,9 @@ void loop() {
   //   digitalWrite(GPIO_LED_ORANGE, LOW);
   // }
   // Nah
-  Serial.println(radio.getStatus());
+  // Serial.println(radio.getStatus());
   uint8_t temp;
-  radio.readRegister(0x8f, &temp);
+  radio.readRegister(0x2f8f, &temp);
   Serial.println(temp);
 
   if (temp == 0x20) {
