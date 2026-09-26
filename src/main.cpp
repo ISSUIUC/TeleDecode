@@ -22,6 +22,7 @@ void init_gpio() {
 
 DECLARE_THREAD(radio, RadioState* state) {
   // Read all our data and stuff
+
 }
 
 
@@ -32,7 +33,16 @@ DECLARE_THREAD(usb_output, RadioState* state) {
 
 void ARDUINO_ISR_ATTR onRadioInterrupt() {
   digitalWrite(GPIO_LED_ORANGE, HIGH);
+  //packet len = 32? could make const
+  //could make timeout a const too?
+  int tmp = CC1120::recvPacket(packet, 32, timeout); //this int should indiate whether a packet was received
+  if (tmp == 1) { //1 or wtv value it returns when it is successfully received
+
+  } 
+
+
   digitalWrite(GPIO_LED_ORANGE, LOW);
+  
 }
 
 void setup() {

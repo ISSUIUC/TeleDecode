@@ -166,14 +166,15 @@ int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) 
         timeout -= 1;
         delay(1);
     }
-
-    // Then we can read?
+    
     // Check if pin 
     if (getNextPacket(rx_data, len) == 0) {
-        // Then we succeeded in reading so we decode fec
-        int ret = ao_fec_decode(rx_data, len, packet, packet_length + 2, NULL);
+    //     // Then we succeeded in reading so we decode fec. packet stores decoded data
+        int ret = ao_fec_decode(rx_data, len, packet, packet_length + 2, NULL); //should return 1 if it succeeds
+        return 1;
     } else {
-        // Error?
+    //     // Error?
+        return 0;
     }
 }
 
