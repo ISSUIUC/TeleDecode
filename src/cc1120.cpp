@@ -21,7 +21,7 @@ int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
     }
 
     uint8_t available_bytes; // number of bytes in packet
-    readRegister(CC112X_NUM_RXBYTES, &available_bytes);
+    readRegister(CC1200_NUM_RXBYTES, &available_bytes);
 
     if (available_bytes < packet_length) {
         return -1; 
@@ -112,7 +112,7 @@ rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
 
     SPI.endTransaction();
 
-    if (command == CC112X_CMD_SRES) {
+    if (command == CC1200_SRES) {
         while (digitalRead(pin_miso)) {
             Serial.println("CC1120 Reset Not Ready");
             sleep(1);
@@ -126,13 +126,13 @@ rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
 
 rfStatus_t CC1120::getStatus()
 {
-    return sendCommandStrobe(CC112X_CMD_SNOP);
+    return sendCommandStrobe(CC1200_SNOP);
 }
 
 rfStatus_t CC1120::setupRadio() {
-    sendCommandStrobe(CC112X_CMD_SRES);
+    sendCommandStrobe(CC1200_SRES);
     // Then set the registers
-    applyConfiguration(cc1120_settings, sizeof(cc1120_settings) / sizeof(cc1120_settings[0]));
+    applyConfiguration(cc1200_settings, sizeof(cc1200_settings) / sizeof(cc1200_settings[0]));
 
     configured = true;
 }
@@ -144,9 +144,9 @@ rfStatus_t CC1120::setupPacketConfig() {
 }
 
 rfStatus_t CC1120::setFrequency(const uint32_t radio_setting) {
-    writeRegister(CC112X_FREQ2, (uint8_t) (radio_setting >> 16));
-    writeRegister(CC112X_FREQ1, (uint8_t) (radio_setting >> 8));
-    writeRegister(CC112X_FREQ0, (uint8_t) (radio_setting));
+    writeRegister(CC1200_FREQ2, (uint8_t) (radio_setting >> 16));
+    writeRegister(CC1200_FREQ1, (uint8_t) (radio_setting >> 8));
+    writeRegister(CC1200_FREQ0, (uint8_t) (radio_setting));
 }
 
 int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) {
@@ -155,8 +155,8 @@ int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) 
 	uint8_t		rssi0;
 	uint8_t		ret;
     packet_length -= 2;
-    uint8_t rx_data[(CC112x_MAX_RECV + 4) * 2 * 8];
-    if (packet_length > CC112x_MAX_RECV) {
+    uint8_t rx_data[(CC1200_MAX_RECV + 4) * 2 * 8];
+    if (packet_length > CC1200_MAX_RECV) {
 		return 0;
 	}
 
@@ -164,10 +164,10 @@ int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) 
 	len += (uint8_t) (1 + ~(len & 1)); /* 1 or two pad bytes */
 	len *= 2;			/* 1/2 rate convolution */
 
-    writeRegister(CC112X_PKT_LEN, len);
+    writeRegister(CC1200_PKT_LEN, len);
     applyConfiguration(packet_rx_setup, 1);
-    writeRegister(CC112X_IOCFG2, CC1120_IOCFG_GPIO_CFG_CLKEN_SOFT);
-    sendCommandStrobe(CC112X_CMD_SRX);
+    writeRegister(CC1200_IOCFG2, CC1200_IOCFG_GPIO_CFG_CLKEN_SOFT);
+    sendCommandStrobe(CC1200_SRX);
     // Then we should check for stuff
 
     while (timeout > 0) {

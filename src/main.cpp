@@ -66,8 +66,8 @@ void setup() {
   
 
   SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
-  // RadioState state;
-  // // attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
+  //RadioState state;
+  attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
   // START_THREAD(radio, SENSOR_CORE, &state, 8);
   // START_THREAD(usb_output, DATA_CORE, &state, 8);
   // while (true) {
@@ -78,9 +78,9 @@ void setup() {
   digitalWrite(GPIO_LED_RED, HIGH);
   digitalWrite(GPIO_LED_BLUE, HIGH);
   digitalWrite(GPIO_LED_GREEN, HIGH);
-  digitalWrite(GPIO_LED_ORANGE, HIGH);
+  // digitalWrite(GPIO_LED_ORANGE, HIGH);
 
-  radio.applyConfiguration(cc1120_settings, 132);
+  radio.applyConfiguration(cc1200_settings, 54);
   // rfStatus_t test = radio.writeRegister(CC112X_SYNC3, 0xD3);
   // Serial.println(test);
 
@@ -107,15 +107,15 @@ void loop() {
   // Serial.println(temp);
   // Serial.println(status);
   uint8_t test;
-  radio.readRegister(CC112X_PA_CFG1, &test); //works!
-  Serial.println(test);
+  radio.readRegister(CC1200_PA_CFG1, &test); //works!
+  // Serial.println(test);
 
-  if (temp == 0x20) {
-    digitalWrite(GPIO_LED_ORANGE, HIGH);
-  }
-  else {
-    digitalWrite(GPIO_LED_ORANGE, LOW);
-  }
+  // if (temp == 0x20) {
+  //   digitalWrite(GPIO_LED_ORANGE, HIGH);
+  // }
+  // else {
+  //   digitalWrite(GPIO_LED_ORANGE, LOW);
+  // }
   
   // for (int i=0; i<255; i++) {
   //   uint8_t temp;
