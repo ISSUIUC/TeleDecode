@@ -33,9 +33,10 @@ DECLARE_THREAD(usb_output, RadioState* state) {
 
 void ARDUINO_ISR_ATTR onRadioInterrupt() {
   digitalWrite(GPIO_LED_ORANGE, HIGH);
-  //packet len = 32? could make const
-  //could make timeout a const too?
+  // packet len = 32? could make const
+  // could make timeout a const too?
   uint8_t data[AO_PACKET_MAX];
+  // Serial.println("data received");
 
   //(uint8_t*) packet 
   int tmp = radio.recvPacket(data, 32, 1000); //this int should indiate whether a packet was received
@@ -50,7 +51,7 @@ void ARDUINO_ISR_ATTR onRadioInterrupt() {
   } 
 
 
-  digitalWrite(GPIO_LED_ORANGE, LOW);
+  // digitalWrite(GPIO_LED_ORANGE, LOW);
   
 }
 
@@ -60,8 +61,9 @@ void setup() {
   Serial.println("Boot");
 
   digitalWrite(GPIO_RADIO_RESET_N, LOW);
-  sleep(1);
+  delay(100);
   digitalWrite(GPIO_RADIO_RESET_N, HIGH);
+  delay(100);
 
   
 
@@ -76,19 +78,17 @@ void setup() {
   
 
   digitalWrite(GPIO_LED_RED, HIGH);
-  digitalWrite(GPIO_LED_BLUE, HIGH);
-  digitalWrite(GPIO_LED_GREEN, HIGH);
+  // digitalWrite(GPIO_LED_BLUE, HIGH);
   // digitalWrite(GPIO_LED_ORANGE, HIGH);
 
-  radio.applyConfiguration(cc1200_settings, 54);
-  // rfStatus_t test = radio.writeRegister(CC112X_SYNC3, 0xD3);
-  // Serial.println(test);
+  radio.applyConfiguration(cc1200_settings, 55);
+  radio.applyConfiguration(packet_setup_384, 5);
+  radio.applyConfiguration(packet_setup, 10);
 
-  // radio.sendCommandStrobe(CC112X_CMD_SRES);
-  // Serial.println("CC1120 Reset Complete");
-  // digitalWrite(SPI_RADIO_CS, LOW);
-  
-
+  radio.setFrequency(0x56E8F6);              // 434.550 MHz @ 40 MHz XOSC
+  radio.sendCommandStrobe(CC1200_SCAL);      // recalibrate synth for the new freq
+  delay(2);
+  radio.sendCommandStrobe(CC1200_SRX);
 }
 
 void loop() {

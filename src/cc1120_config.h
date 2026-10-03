@@ -159,35 +159,38 @@ const registerSetting_t cc1200_settings[] =
         {CC1200_XOSC5,                        0x0e},       /* Crystal Oscillator Configuration Reg. 5 */
         {CC1200_XOSC1,                        0x03}      /* Crystal Oscillator Configuration Reg. 1 */
 };
-const registerSetting_t packet_setup[] = {
-    {CC1200_SYMBOL_RATE1, (PACKET_DRATE_M >> 8) & 0xff},
-    {CC1200_SYMBOL_RATE0, (PACKET_DRATE_M >> 0) & 0xff},
-    {CC1200_PKT_CFG2, 0x00},
-    {CC1200_PKT_CFG1, 0x00},
-    {CC1200_PKT_CFG0, 0x00},
-    {CC1200_PREAMBLE_CFG1, (6 << 2)}
+
+static const registerSetting_t packet_setup[] = {
+	CC1200_SYMBOL_RATE1,		((PACKET_DRATE_M >> 8) & 0xff),
+	CC1200_SYMBOL_RATE0,		((PACKET_DRATE_M >> 0) & 0xff),
+        CC1200_PKT_CFG2,                            	 /* Packet Configuration Reg. 2 */
+		((0 << CC1200_PKT_CFG2_FG_MODE_EN) |
+		 (CC1200_PKT_CFG2_CCA_MODE_ALWAYS_CLEAR << CC1200_PKT_CFG2_CCA_MODE) |
+		 (CC1200_PKT_CFG2_PKT_FORMAT_NORMAL << CC1200_PKT_CFG2_PKT_FORMAT)),
+        CC1200_PKT_CFG1,                                 /* Packet Configuration Reg. 1 */
+		((1 << CC1200_PKT_CFG1_FEC_EN) |
+		 (1 << CC1200_PKT_CFG1_WHITE_DATA) |
+		 (0 << CC1200_PKT_CFG1_PN9_SWAP_EN) |
+		 (CC1200_PKT_CFG1_ADDR_CHECK_CFG_NONE << CC1200_PKT_CFG1_ADDR_CHECK_CFG) |
+		 (CC1200_PKT_CFG1_CRC_CFG_CRC16_INIT_ONES << CC1200_PKT_CFG1_CRC_CFG) |
+		 (1 << CC1200_PKT_CFG1_APPEND_STATUS)),
+        CC1200_PREAMBLE_CFG1,	((CC1200_PREAMBLE_CFG1_NUM_PREAMBLE_4_BYTES << CC1200_PREAMBLE_CFG1_NUM_PREAMBLE) |
+				 (CC1200_PREAMBLE_CFG1_PREAMBLE_WORD_AA << CC1200_PREAMBLE_CFG1_PREAMBLE_WORD)),
 };
+#define PACKET_CHAN_BW_384	((CC1200_CHAN_BW_ADC_CIC_DECFACT_12 << CC1200_CHAN_BW_ADC_CIC_DECFACT) | \
+				 (16 << CC1200_CHAN_BW_BB_CIC_DECFACT))
 
-const registerSetting_t packet_setup_384[] = {
-    {CC1200_DEVIATION_M, 80}, 
-    {CC1200_MODCFG_DEV_E, ((0 << 6) | (1 << 3) | (5 << 0))}, /* Modem mode normal, 2-GFSK */
-    {CC1200_SYMBOL_RATE2, ((9 << 4) | (((PACKET_DRATE_M >> 16) & 0xf) << 0))},
-    {CC1200_CHAN_BW, ((0 << 7) | (0 << 6) | (2 << 0))}, 
-    {CC1200_PA_CFG0, 0x7b}
-};
-
-const registerSetting_t packet_setup_96[] = {
-    {CC1200_DEVIATION_M, 80}, 
-    {CC1200_MODCFG_DEV_E, ((0 << 6) | (1 << 3) | (3 << 0))}, /* Modem mode normal, 2-GFSK */
-    {CC1200_SYMBOL_RATE2, ((7 << 4) | (((PACKET_DRATE_M >> 16) & 0xf) << 0))},
-    {CC1200_CHAN_BW, ((0 << 7) | (0 << 6) | (10 << 0))}, 
-    {CC1200_PA_CFG0, 0x7d}
-};
-
-const registerSetting_t packet_rx_setup[] = {
-    CC1200_PKT_CFG2,	((CC1200_PKT_CFG2_CCA_MODE_ALWAYS_CLEAR << CC1200_PKT_CFG2_CCA_MODE) |
-				 (CC1200_PKT_CFG2_PKT_FORMAT_SYNCHRONOUS_SERIAL << CC1200_PKT_CFG2_PKT_FORMAT))
-
-    // TODO: Set interrupt thingies
-    // AO_CC1120_INT_GPIO_IOCFG, 		CC1120_IOCFG_GPIO_CFG_CLKEN_SOFT,
+static const registerSetting_t packet_setup_384[] = {
+	CC1200_DEVIATION_M,	PACKET_DEV_M_384,
+	CC1200_MODCFG_DEV_E,	((CC1200_MODCFG_DEV_E_MODEM_MODE_NORMAL << CC1200_MODCFG_DEV_E_MODEM_MODE) |
+				 (CC1200_MODCFG_DEV_E_MOD_FORMAT_2_GFSK << CC1200_MODCFG_DEV_E_MOD_FORMAT) |
+				 (PACKET_DEV_E_384 << CC1200_MODCFG_DEV_E_DEV_E)),
+	CC1200_SYMBOL_RATE2,	((PACKET_SYMBOL_RATE_E_384 << CC1200_SYMBOL_RATE2_DATARATE_E) |
+				 (((PACKET_SYMBOL_RATE_M >> 16) & CC1200_SYMBOL_RATE2_DATARATE_M_19_16_MASK) << CC1200_SYMBOL_RATE2_DATARATE_M_19_16)),
+	CC1200_CHAN_BW,		PACKET_CHAN_BW_384,
+        CC1200_MDMCFG2,                                  /* General Modem Parameter Configuration Reg. 2 */
+		((CC1200_MDMCFG2_ASK_SHAPE_8 << CC1200_MDMCFG2_ASK_SHAPE) |
+		 (CC1200_MDMCFG2_SYMBOL_MAP_CFG_MODE_0 << CC1200_MDMCFG2_SYMBOL_MAP_CFG) |
+		 (CC1200_MDMCFG2_UPSAMPLER_P_8 << CC1200_MDMCFG2_UPSAMPLER_P) |
+		 (0 << CC1200_MDMCFG2_CFM_DATA_EN)),
 };

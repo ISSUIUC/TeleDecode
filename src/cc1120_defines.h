@@ -11,7 +11,14 @@
 #define FIFO_BURST_ACCESS               0x7F
 
 #define CC1200_MAX_RECV                 64
-#define PACKET_DRATE_M	239914
+#define PACKET_DRATE_M	1013008
+
+#define PACKET_DEV_M_384	13
+#define PACKET_DEV_E_384	3
+
+#define PACKET_SYMBOL_RATE_M		1013008
+#define PACKET_SYMBOL_RATE_E_384	8
+
 /* configuration registers */
 #define CC1200_READ	(7)
 #define CC1200_BURST	(6)

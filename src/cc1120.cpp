@@ -87,8 +87,8 @@ rfStatus_t CC1120::readRegister(uint16_t address, uint8_t *buffer)
     }
     // extended register range
     else if ((address >> 8) == 0x2F){
-        SPI.transfer(SINGLE_EXTENDED_REGISTER_READ);
-        status = SPI.transfer((uint8_t) address);
+        status = SPI.transfer(SINGLE_EXTENDED_REGISTER_READ);
+        SPI.transfer((uint8_t) address);
     }
     else {
         Serial.println("read register not valid");
@@ -108,7 +108,7 @@ rfStatus_t CC1120::sendCommandStrobe(uint8_t command)
     digitalWrite(pin_cs, LOW);
     SPI.beginTransaction(spiSettings);
 
-    rfStatus_t status = SPI.transfer(command);
+    rfStatus_t status = SPI.transfer(0x80 | command);
 
     SPI.endTransaction();
 
@@ -146,7 +146,7 @@ rfStatus_t CC1120::setupPacketConfig() {
 rfStatus_t CC1120::setFrequency(const uint32_t radio_setting) {
     writeRegister(CC1200_FREQ2, (uint8_t) (radio_setting >> 16));
     writeRegister(CC1200_FREQ1, (uint8_t) (radio_setting >> 8));
-    writeRegister(CC1200_FREQ0, (uint8_t) (radio_setting));
+    return writeRegister(CC1200_FREQ0, (uint8_t) (radio_setting));
 }
 
 int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) {
