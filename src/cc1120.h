@@ -20,6 +20,8 @@ class CC1120 {
 
         rfStatus_t setFrequency(const uint32_t radio_setting);
 
+        rfStatus_t setFrequency(const double RF_freq_MHz);
+
         rfStatus_t setupRadio();
 
         rfStatus_t getStatus();
@@ -41,6 +43,7 @@ class CC1120 {
         uint8_t pin_miso;
         uint8_t pin_gpio2;
         bool configured = false;
+        uint32_t getRadioSetting(const double RF_freq_MHz);
 };
 
 #endif /* CC1120_H */

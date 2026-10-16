@@ -74,7 +74,7 @@ void setup() {
   radio.applyConfiguration(packet_setup_384, 5);
   radio.applyConfiguration(packet_setup, 10);
 
-  radio.setFrequency(0x56E8F6);              // 434.550 MHz @ 40 MHz XOSC
+  radio.setFrequency(434.550);              // 434.550 MHz @ 40 MHz XOSC
   radio.sendCommandStrobe(CC1200_SCAL);      // recalibrate synth for the new freq
   delay(2);
   radio.sendCommandStrobe(CC1200_SRX);
