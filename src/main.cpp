@@ -6,6 +6,7 @@
 #include "hal.h"
 #include "radio_state.h"
 #include "cc1120.h"
+#include "ao_telemetry.h"
 
 CC1120 radio(SPI, SPI_RADIO_CS, SPI_RADIO_MISO, GPIO_RADIO_INT);
 
@@ -20,8 +21,12 @@ void init_gpio() {
   pinMode(SPI_RADIO_MISO, INPUT);
 }
 
+bool orangeLed = false;
+bool packetReady = false;
+
 DECLARE_THREAD(radio, RadioState* state) {
   // Read all our data and stuff
+
 }
 
 
@@ -31,8 +36,11 @@ DECLARE_THREAD(usb_output, RadioState* state) {
 }
 
 void ARDUINO_ISR_ATTR onRadioInterrupt() {
-  digitalWrite(GPIO_LED_ORANGE, HIGH);
-  digitalWrite(GPIO_LED_ORANGE, LOW);
+  digitalWrite(GPIO_LED_ORANGE, orangeLed ? HIGH: LOW);
+  orangeLed = !orangeLed;
+  packetReady = true;
+  // packet len = 32? could make const
+  // could make timeout a const too?
 }
 
 void setup() {
@@ -41,26 +49,36 @@ void setup() {
   Serial.println("Boot");
 
   digitalWrite(GPIO_RADIO_RESET_N, LOW);
-  sleep(1);
+  delay(100);
   digitalWrite(GPIO_RADIO_RESET_N, HIGH);
+  delay(100);
+
+  
 
   SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
-  // RadioState state;
-  // // attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
+  //RadioState state;
+  attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, FALLING);
   // START_THREAD(radio, SENSOR_CORE, &state, 8);
   // START_THREAD(usb_output, DATA_CORE, &state, 8);
   // while (true) {
   //   THREAD_SLEEP(1000);
   // }
+  
 
   digitalWrite(GPIO_LED_RED, HIGH);
   digitalWrite(GPIO_LED_BLUE, HIGH);
-  digitalWrite(GPIO_LED_GREEN, HIGH);
   digitalWrite(GPIO_LED_ORANGE, HIGH);
+  digitalWrite(GPIO_LED_GREEN, HIGH);
 
-  // radio.sendCommandStrobe(CC112X_CMD_SRES);
-  // Serial.println("CC1120 Reset Complete");
-  // digitalWrite(SPI_RADIO_CS, LOW);
+  radio.applyConfiguration(cc1200_settings, 55);
+  radio.applyConfiguration(packet_setup_384, 5);
+  radio.applyConfiguration(packet_setup, 10);
+
+  radio.setFrequency(0x56E8F6);              // 434.550 MHz @ 40 MHz XOSC
+  radio.sendCommandStrobe(CC1200_SCAL);      // recalibrate synth for the new freq
+  delay(2);
+  radio.sendCommandStrobe(CC1200_SRX);
+  radio.writeRegister(CC1200_PKT_LEN, 32);
 }
 
 void loop() {
@@ -73,16 +91,22 @@ void loop() {
   // }
   // Nah
   // Serial.println(radio.getStatus());
+  // Serial.println(cc1120_settings[40].addr); //doesnt print after 41 for some reason
   uint8_t temp;
-  radio.readRegister(0x2f8f, &temp);
-  Serial.println(temp);
+  rfStatus_t status = radio.readRegister(0x2f8f, &temp);
+  // Serial.println(temp);
+  // Serial.println(status);
+  uint8_t test;
+  radio.readRegister(CC1200_PA_CFG1, &test); //works!
+  // Serial.println("loop");
+  // Serial.println(test);
 
-  if (temp == 0x20) {
-    digitalWrite(GPIO_LED_ORANGE, HIGH);
-  }
-  else {
-    digitalWrite(GPIO_LED_ORANGE, LOW);
-  }
+  // if (temp == 0x20) {
+  //   digitalWrite(GPIO_LED_ORANGE, HIGH);
+  // }
+  // else {
+  //   digitalWrite(GPIO_LED_ORANGE, LOW);
+  // }
   
   // for (int i=0; i<255; i++) {
   //   uint8_t temp;
@@ -97,5 +121,34 @@ void loop() {
   //   sleep(0.1);
   // }
   // This should never happen
+  if (packetReady) {
+    uint8_t data[AO_MAX_TELEMETRY];
+    // Serial.println("data received");
+
+    //(uint8_t*) packet 
+    int tmp = radio.recvPacket(data, 32, 50); //this int should indiate whether a packet was received
+    if (tmp == 1) { //1 or wtv value it returns when it is successfully received
+      // digitalWrite(GPIO_LED_BLUE, HIGH); 
+      // // delay(2000);
+      digitalWrite(GPIO_LED_BLUE, LOW);
+      //then print the packet to console
+      Serial.println("packet rx success");
+      for (uint8_t b : data) {
+        Serial.printf("%02x ", b);
+      }
+      Serial.println();
+      ao_telemetry_generic * telem = (ao_telemetry_generic *) data;
+      Serial.printf("serial: %u\n", telem->serial);
+      Serial.printf("tick: %u\n", telem->tick);
+      Serial.printf("type: %u\n", telem->type);
+      Serial.println("-------------------");
+    } 
+    else {
+      digitalWrite(GPIO_LED_BLUE, HIGH);
+    }
+    radio.sendCommandStrobe(CC1200_SRX);
+    packetReady = false;
+  }
+  // digitalWrite(GPIO_LED_ORANGE, LOW);
 }
 
