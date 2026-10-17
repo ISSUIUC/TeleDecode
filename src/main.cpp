@@ -6,6 +6,7 @@
 #include "hal.h"
 #include "radio_state.h"
 #include "cc1120.h"
+#include "ao_telemetry.h"
 
 CC1120 radio(SPI, SPI_RADIO_CS, SPI_RADIO_MISO, GPIO_RADIO_INT);
 
@@ -20,6 +21,9 @@ void init_gpio() {
   pinMode(SPI_RADIO_MISO, INPUT);
 }
 
+bool orangeLed = false;
+bool packetReady = false;
+
 DECLARE_THREAD(radio, RadioState* state) {
   // Read all our data and stuff
 
@@ -32,27 +36,11 @@ DECLARE_THREAD(usb_output, RadioState* state) {
 }
 
 void ARDUINO_ISR_ATTR onRadioInterrupt() {
-  digitalWrite(GPIO_LED_ORANGE, HIGH);
+  digitalWrite(GPIO_LED_ORANGE, orangeLed ? HIGH: LOW);
+  orangeLed = !orangeLed;
+  packetReady = true;
   // packet len = 32? could make const
   // could make timeout a const too?
-  uint8_t data[AO_PACKET_MAX];
-  // Serial.println("data received");
-
-  //(uint8_t*) packet 
-  int tmp = radio.recvPacket(data, 32, 1000); //this int should indiate whether a packet was received
-  if (tmp == 1) { //1 or wtv value it returns when it is successfully received
-    digitalWrite(GPIO_LED_BLUE, HIGH); 
-    delay(2000);
-    digitalWrite(GPIO_LED_BLUE, LOW);
-    //then print the packet to console
-    for (uint8_t b : data) {
-      std::printf("%02x ", b);
-    }
-  } 
-
-
-  // digitalWrite(GPIO_LED_ORANGE, LOW);
-  
 }
 
 void setup() {
@@ -69,7 +57,7 @@ void setup() {
 
   SPI.begin(SPI_RADIO_SCLK, SPI_RADIO_MISO, SPI_RADIO_MOSI);
   //RadioState state;
-  attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, RISING);
+  attachInterrupt(GPIO_RADIO_INT, onRadioInterrupt, FALLING);
   // START_THREAD(radio, SENSOR_CORE, &state, 8);
   // START_THREAD(usb_output, DATA_CORE, &state, 8);
   // while (true) {
@@ -78,8 +66,9 @@ void setup() {
   
 
   digitalWrite(GPIO_LED_RED, HIGH);
-  // digitalWrite(GPIO_LED_BLUE, HIGH);
-  // digitalWrite(GPIO_LED_ORANGE, HIGH);
+  digitalWrite(GPIO_LED_BLUE, HIGH);
+  digitalWrite(GPIO_LED_ORANGE, HIGH);
+  digitalWrite(GPIO_LED_GREEN, HIGH);
 
   radio.applyConfiguration(cc1200_settings, 55);
   radio.applyConfiguration(packet_setup_384, 5);
@@ -89,6 +78,7 @@ void setup() {
   radio.sendCommandStrobe(CC1200_SCAL);      // recalibrate synth for the new freq
   delay(2);
   radio.sendCommandStrobe(CC1200_SRX);
+  radio.writeRegister(CC1200_PKT_LEN, 32);
 }
 
 void loop() {
@@ -108,6 +98,7 @@ void loop() {
   // Serial.println(status);
   uint8_t test;
   radio.readRegister(CC1200_PA_CFG1, &test); //works!
+  // Serial.println("loop");
   // Serial.println(test);
 
   // if (temp == 0x20) {
@@ -130,5 +121,34 @@ void loop() {
   //   sleep(0.1);
   // }
   // This should never happen
+  if (packetReady) {
+    uint8_t data[AO_MAX_TELEMETRY];
+    // Serial.println("data received");
+
+    //(uint8_t*) packet 
+    int tmp = radio.recvPacket(data, 32, 50); //this int should indiate whether a packet was received
+    if (tmp == 1) { //1 or wtv value it returns when it is successfully received
+      // digitalWrite(GPIO_LED_BLUE, HIGH); 
+      // // delay(2000);
+      digitalWrite(GPIO_LED_BLUE, LOW);
+      //then print the packet to console
+      Serial.println("packet rx success");
+      for (uint8_t b : data) {
+        Serial.printf("%02x ", b);
+      }
+      Serial.println();
+      ao_telemetry_generic * telem = (ao_telemetry_generic *) data;
+      Serial.printf("serial: %u\n", telem->serial);
+      Serial.printf("tick: %u\n", telem->tick);
+      Serial.printf("type: %u\n", telem->type);
+      Serial.println("-------------------");
+    } 
+    else {
+      digitalWrite(GPIO_LED_BLUE, HIGH);
+    }
+    radio.sendCommandStrobe(CC1200_SRX);
+    packetReady = false;
+  }
+  // digitalWrite(GPIO_LED_ORANGE, LOW);
 }
 

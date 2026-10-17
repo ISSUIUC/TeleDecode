@@ -13,37 +13,6 @@ void CC1120::applyConfiguration(const registerSetting_t* regs, int num_regs)
     }
 }
 
-int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
-{
-    // TODO: verify GPIO2 is configured to CRC_OK
-    if (!digitalRead(pin_gpio2)) {
-        return -1; // no packet available
-    }
-
-    uint8_t available_bytes; // number of bytes in packet
-    readRegister(CC1200_NUM_RXBYTES, &available_bytes);
-
-    if (available_bytes < packet_length) {
-        return -1; 
-    }
-
-    // RX FIFO burst access
-    uint8_t header = FIFO_BURST_ACCESS | SINGLE_REGISTER_READ;
-    SPI.beginTransaction(spiSettings);
-    digitalWrite(pin_cs, LOW);
-
-    rfStatus_t status = SPI.transfer(header);
-
-    for (int i=0; i<packet_length; i++) {
-        packet[i] = SPI.transfer(0x00);
-    }
-
-    digitalWrite(pin_cs, HIGH);
-    SPI.endTransaction();
-
-    return 0;
-}
-
 rfStatus_t CC1120::writeRegister(uint16_t address, uint8_t buffer)
 {
     SPI.beginTransaction(spiSettings);
@@ -149,40 +118,77 @@ rfStatus_t CC1120::setFrequency(const uint32_t radio_setting) {
     return writeRegister(CC1200_FREQ0, (uint8_t) (radio_setting));
 }
 
+int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
+{
+    // TODO: verify GPIO2 is configured to CRC_OK
+    // if (!digitalRead(pin_gpio2)) {
+    //     return -1; // no packet available
+    // }
+
+    uint8_t available_bytes; // number of bytes in packet
+    readRegister(CC1200_NUM_RXBYTES, &available_bytes);
+
+    if (available_bytes < packet_length) {
+        // digitalWrite(9, LOW);
+        return -1; 
+    }
+    // digitalWrite(9, HIGH);
+
+    // RX FIFO burst access
+    uint8_t header = FIFO_BURST_ACCESS | SINGLE_REGISTER_READ;
+    SPI.beginTransaction(spiSettings);
+    digitalWrite(pin_cs, LOW);
+
+    rfStatus_t status = SPI.transfer(header);
+
+    for (int i=0; i<packet_length; i++) {
+        packet[i] = SPI.transfer(0x00);
+    }
+
+    digitalWrite(pin_cs, HIGH);
+    SPI.endTransaction();
+
+    return 0;
+}
+
 int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) {
-    uint8_t		len;
+    // uint8_t		len;
 	uint8_t		radio_rssi = 0;
 	uint8_t		rssi0;
 	uint8_t		ret;
-    packet_length -= 2;
+    packet_length += 2;
     uint8_t rx_data[(CC1200_MAX_RECV + 4) * 2 * 8];
     if (packet_length > CC1200_MAX_RECV) {
 		return 0;
 	}
 
-    len = packet_length + 2;			/* CRC bytes */
-	len += (uint8_t) (1 + ~(len & 1)); /* 1 or two pad bytes */
-	len *= 2;			/* 1/2 rate convolution */
+    // len = packet_length + 2;			/* CRC bytes */
+	// len += (uint8_t) (1 + ~(len & 1)); /* 1 or two pad bytes */
+	// len *= 2;			/* 1/2 rate convolution */
 
-    writeRegister(CC1200_PKT_LEN, len);
-    applyConfiguration(packet_rx_setup, 1);
-    writeRegister(CC1200_IOCFG2, CC1200_IOCFG_GPIO_CFG_CLKEN_SOFT);
-    sendCommandStrobe(CC1200_SRX);
+    // these are done already in setup()
+    // writeRegister(CC1200_PKT_LEN, len);
+    // applyConfiguration(packet_rx_setup, 1);
+    // writeRegister(CC1200_IOCFG2, CC1200_IOCFG_GPIO_CFG_CLKEN_SOFT);
+    // sendCommandStrobe(CC1200_SRX);
     // Then we should check for stuff
 
-    while (timeout > 0) {
-        if (digitalRead(pin_gpio2) == LOW) {
-            // Then we got something
-            break;
-        }
-        timeout -= 1;
-        delay(1);
-    }
+    // while (timeout > 0) {
+    //     if (digitalRead(pin_gpio2) == LOW) {
+    //         // Then we got something
+    //         break;
+    //     }
+    //     timeout -= 1;
+    //     delay(1);
+    // }
     
     // Check if pin 
-    if (getNextPacket(rx_data, len) == 0) {
+    if (getNextPacket(rx_data, packet_length) == 0) {
     //     // Then we succeeded in reading so we decode fec. packet stores decoded data
-        int ret = ao_fec_decode(rx_data, len, packet, packet_length + 2, NULL); //should return 1 if it succeeds
+        // int ret = ao_fec_decode(rx_data, len, packet, packet_length + 2, NULL); //should return 1 if it succeeds
+        for (int i=0; i<packet_length-2; i++) {
+            packet[i] = rx_data[i];
+        }
         return 1;
     } else {
     //     // Error?
