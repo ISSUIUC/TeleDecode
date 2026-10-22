@@ -117,6 +117,19 @@ rfStatus_t CC1120::setFrequency(const uint32_t radio_setting) {
     writeRegister(CC1200_FREQ1, (uint8_t) (radio_setting >> 8));
     return writeRegister(CC1200_FREQ0, (uint8_t) (radio_setting));
 }
+uint32_t CC1120::getRadioSetting(const double RF_freq_MHz) {
+    assert(RF_freq_MHz >= 410.0 && RF_freq_MHz <= 480.0 && "Frequency out of range for selected band (410-480 MHz)");
+    uint8_t loDivider = band410_480.loDivider;
+    constexpr uint32_t crystal_clock_freq = 40000000; // 40 MHz (f_XOSC)
+    double RF_freq_Hz = RF_freq_MHz * 1e6;
+    double VCO_freq_Hz = loDivider * RF_freq_Hz; 
+    uint32_t radio_setting = (uint32_t) (( VCO_freq_Hz / crystal_clock_freq) * 65536 + 0.5); // round to nearest integer
+    return radio_setting;
+}
+
+rfStatus_t CC1120::setFrequency(const double RF_freq_MHz) {
+    return setFrequency(getRadioSetting(RF_freq_MHz));
+}
 
 int CC1120::getNextPacket(uint8_t *packet, uint8_t packet_length)
 {
