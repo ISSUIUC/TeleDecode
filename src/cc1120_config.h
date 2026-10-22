@@ -194,3 +194,20 @@ static const registerSetting_t packet_setup_384[] = {
 		 (CC1200_MDMCFG2_UPSAMPLER_P_8 << CC1200_MDMCFG2_UPSAMPLER_P) |
 		 (0 << CC1200_MDMCFG2_CFM_DATA_EN)),
 };
+
+static const registerSetting_t packet_rx_setup[] = {
+	{CC1200_PKT_CFG2,
+		((CC1200_PKT_CFG2_CCA_MODE_ALWAYS_CLEAR << CC1200_PKT_CFG2_CCA_MODE) |
+		 (CC1200_PKT_CFG2_PKT_FORMAT_SYNCHRONOUS_SERIAL << CC1200_PKT_CFG2_PKT_FORMAT))}
+};
+
+typedef struct {
+	uint8_t bandSelect;
+	uint8_t loDivider;
+} SynthBand_t;
+
+constexpr SynthBand_t band410_480 = {
+	CC1200_FS_CFG_FSD_BANDSELECT_410_480, 8
+	// see Table 30
+};
+
