@@ -184,12 +184,14 @@ int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) 
         raw_rssi_12_bit |= 0xf000;
     }
 
-     #define RSSI_OFFSET (-99) //may need to change this value
+    #define RSSI_OFFSET (0) //may need to change this value
     float rssi_dbm = (raw_rssi_12_bit) / 16 + RSSI_OFFSET;
     if (rssi_dbm == -128) {
         Serial.println("-128 dBm received; invalid RSSI");
         return 0;
-    } 
+    } else {
+         Serial.printf("rssi: %f\n", rssi_dbm);
+    }
 
     // len = packet_length + 2;			/* CRC bytes */
 	// len += (uint8_t) (1 + ~(len & 1)); /* 1 or two pad bytes */

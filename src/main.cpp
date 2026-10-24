@@ -94,6 +94,7 @@ void loop() {
   // Serial.println(cc1120_settings[40].addr); //doesnt print after 41 for some reason
   uint8_t temp;
   rfStatus_t status = radio.readRegister(0x2f8f, &temp);
+  
   // Serial.println(temp);
   // Serial.println(status);
   uint8_t test;
