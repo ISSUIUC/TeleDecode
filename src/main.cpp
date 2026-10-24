@@ -74,7 +74,7 @@ void setup() {
   radio.applyConfiguration(packet_setup_384, 5);
   radio.applyConfiguration(packet_setup, 10);
 
-  radio.setFrequency(434.550);              // 434.550 MHz @ 40 MHz XOSC
+  radio.setFrequency(435.450);              // 434.550 MHz @ 40 MHz XOSC
   radio.sendCommandStrobe(CC1200_SCAL);      // recalibrate synth for the new freq
   delay(2);
   radio.sendCommandStrobe(CC1200_SRX);
@@ -142,6 +142,8 @@ void loop() {
       Serial.printf("serial: %u\n", telem->serial);
       Serial.printf("tick: %u\n", telem->tick);
       Serial.printf("type: %u\n", telem->type);
+      float rssi = radio.getRSSI();
+      Serial.printf("rssi: %f\n", rssi);
       Serial.println("-------------------");
     } 
     else {

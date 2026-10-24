@@ -175,24 +175,6 @@ int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) 
 		return 0;
 	}
 
-    //modify value of rssi
-    readRegister(CC1200_RSSI1, &rssi1); //whole number dbm
-    readRegister(CC1200_RSSI0, &rssi0); //fractional dbm (1/16)
-    //combine into a 12 bit signed integer
-    int16_t raw_rssi_12_bit = (uint16_t)((uint16_t) rssi1 << 4) | ((rssi0 >> 3) & 0x0F);  
-    if (raw_rssi_12_bit & 0x0800) { //sign extending 12-bit if necessary, bc we're storing in 16 bits
-        raw_rssi_12_bit |= 0xf000;
-    }
-
-    #define RSSI_OFFSET (0) //may need to change this value
-    float rssi_dbm = (raw_rssi_12_bit) / 16 + RSSI_OFFSET;
-    if (rssi_dbm == -128) {
-        Serial.println("-128 dBm received; invalid RSSI");
-        return 0;
-    } else {
-         Serial.printf("rssi: %f\n", rssi_dbm);
-    }
-
     // len = packet_length + 2;			/* CRC bytes */
 	// len += (uint8_t) (1 + ~(len & 1)); /* 1 or two pad bytes */
 	// len *= 2;			/* 1/2 rate convolution */
@@ -224,6 +206,28 @@ int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) 
     } else {
     //     // Error?
         return 0;
+    }
+}
+
+float CC1120::getRSSI() {
+    //modify value of rssi
+    uint8_t		rssi1 = 0;
+	uint8_t		rssi0 = 0;
+    readRegister(CC1200_RSSI1, &rssi1); //whole number dbm
+    readRegister(CC1200_RSSI0, &rssi0); //fractional dbm (1/16)
+    //combine into a 12 bit signed integer
+    int16_t raw_rssi_12_bit = (uint16_t)((uint16_t) rssi1 << 4) | ((rssi0 >> 3) & 0x0F);  
+    if (raw_rssi_12_bit & 0x0800) { //sign extending 12-bit if necessary, bc we're storing in 16 bits
+        raw_rssi_12_bit |= 0xf000;
+    }
+
+    #define RSSI_OFFSET (0) //may need to change this value
+    float rssi_dbm = (raw_rssi_12_bit) / 16 + RSSI_OFFSET;
+    if (rssi_dbm == -128) {
+        Serial.println("-128 dBm received; invalid RSSI");
+        return -128;
+    } else {
+        return rssi_dbm;
     }
 }
 
