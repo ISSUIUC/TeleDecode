@@ -17,11 +17,6 @@ class CC1120 {
         /* @brief Reads the next available packet. Returns 1 if successful */
         int getNextPacket(uint8_t *packet, uint8_t packet_length);
         int recvPacket(uint8_t *packet, uint8_t packet_length, int32_t timeout);
-        bool configurePacketLink(uint8_t encoded_length);
-        void restorePacketLink();
-        int readPacketLinkBytes(uint8_t *packet, uint8_t packet_capacity);
-        bool sendPacketLinkBytes(const uint8_t *packet, uint8_t packet_length);
-        void restartPacketLinkReceive();
 
         rfStatus_t setFrequency(const uint32_t radio_setting);
 
@@ -48,8 +43,6 @@ class CC1120 {
         uint8_t pin_miso;
         uint8_t pin_gpio2;
         bool configured = false;
-        bool packetLinkConfigured = false;
-        uint8_t savedPacketConfig[6] = {};
         uint32_t getRadioSetting(const double RF_freq_MHz);
 };
 
