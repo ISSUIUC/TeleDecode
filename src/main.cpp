@@ -39,6 +39,7 @@ void ARDUINO_ISR_ATTR onRadioInterrupt() {
   digitalWrite(GPIO_LED_ORANGE, orangeLed ? HIGH: LOW);
   orangeLed = !orangeLed;
   packetReady = true;
+  // we can't read the packet here because SPI uses delay()
   // packet len = 32? could make const
   // could make timeout a const too?
 }
@@ -144,6 +145,18 @@ void loop() {
       Serial.printf("type: %u\n", telem->type);
       float rssi = radio.getRSSI();
       Serial.printf("rssi: %f\n", rssi);
+      switch (telem->type)
+      {
+        case AO_TELEMETRY_MEGA_DATA_15V: {
+          ao_telemetry_mega_data * packet = (ao_telemetry_mega_data *) data;
+          Serial.printf("battery: %u\n", packet->v_batt);
+          break;
+        }
+        
+        default: {
+          break;
+        }
+      }
       Serial.println("-------------------");
     } 
     else {
