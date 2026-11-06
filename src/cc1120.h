@@ -17,7 +17,8 @@ class CC1120 {
         /* @brief Reads the next available packet. Returns 1 if successful */
         int getNextPacket(uint8_t *packet, uint8_t packet_length);
         int recvPacket(uint8_t *packet, uint8_t packet_length, int32_t timeout);
-
+        float getRSSI();    
+        
         rfStatus_t setFrequency(const uint32_t radio_setting);
 
         rfStatus_t setFrequency(const double RF_freq_MHz);
@@ -34,6 +35,8 @@ class CC1120 {
         /* @brief Sends a command strobe */
         rfStatus_t sendCommandStrobe(uint8_t command);
         /* @brief Gets the current status */
+
+      
 
     private:
         SPIClass& spi;

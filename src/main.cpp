@@ -95,6 +95,7 @@ void loop() {
   // Serial.println(cc1120_settings[40].addr); //doesnt print after 41 for some reason
   uint8_t temp;
   rfStatus_t status = radio.readRegister(0x2f8f, &temp);
+  
   // Serial.println(temp);
   // Serial.println(status);
   uint8_t test;
@@ -142,6 +143,8 @@ void loop() {
       Serial.printf("serial: %u\n", telem->serial);
       Serial.printf("tick: %u\n", telem->tick);
       Serial.printf("type: %u\n", telem->type);
+      float rssi = radio.getRSSI();
+      Serial.printf("rssi: %f\n", rssi);
       switch (telem->type)
       {
         case AO_TELEMETRY_MEGA_DATA_15V: {
