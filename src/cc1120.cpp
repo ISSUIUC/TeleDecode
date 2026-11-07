@@ -199,7 +199,7 @@ int CC1120::recvPacket(uint8_t* packet, uint8_t packet_length, int32_t timeout) 
     if (getNextPacket(rx_data, packet_length) == 0) {
     //     // Then we succeeded in reading so we decode fec. packet stores decoded data
         // int ret = ao_fec_decode(rx_data, len, packet, packet_length + 2, NULL); //should return 1 if it succeeds
-        for (int i=0; i<packet_length-2; i++) {
+        for (int i=0; i<packet_length; i++) {
             packet[i] = rx_data[i];
         }
         return 1;

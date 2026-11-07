@@ -31,12 +31,26 @@
 #define AO_MAX_TELEMETRY		32
 #endif
 
+#define TELEMEGA_CHANNEL_0 434.550
+#define TELEMEGA_CHANNEL_1 434.650
+#define TELEMEGA_CHANNEL_2 434.750
+#define TELEMEGA_CHANNEL_3 434.850
+#define TELEMEGA_CHANNEL_4 434.950
+#define TELEMEGA_CHANNEL_5 435.050
+#define TELEMEGA_CHANNEL_6 435.150
+#define TELEMEGA_CHANNEL_7 435.250
+#define TELEMEGA_CHANNEL_8 435.350
+#define TELEMEGA_CHANNEL_9 435.450
+
 struct ao_telemetry_generic {
 	uint16_t	serial;		/* 0 */
 	uint16_t	tick;		/* 2 */
 	uint8_t		type;		/* 4 */
 	uint8_t		payload[27];	/* 5 */
 	/* 32 */
+	uint8_t		rssi;
+	uint8_t		lqi  	: 7;
+	uint8_t 	crc_ok  : 1;
 };
 
 #define AO_TELEMETRY_SENSOR_TELEMETRUM	0x01
@@ -352,7 +366,7 @@ struct ao_telemetry_baro {
 };
 
 union ao_telemetry_all {
-	struct ao_telemetry_generic		generic;
+	// struct ao_telemetry_generic		generic;
 	struct ao_telemetry_sensor		sensor;
 	struct ao_telemetry_configuration	configuration;
 	struct ao_telemetry_location		location;

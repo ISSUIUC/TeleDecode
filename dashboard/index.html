@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TeleDecode Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <header class="topbar">
+    <div class="identity">
+      <h1>TeleDecode</h1>
+      <span id="device-line" class="muted">No device yet</span>
+      <label id="device-picker" class="picker" hidden>
+        <span class="visually-hidden">Device</span>
+        <select id="device-select"></select>
+      </label>
+    </div>
+    <div class="topbar-right">
+      <span id="link" class="status" title=""></span>
+      <span id="age" class="muted tabular"></span>
+      <button id="theme" type="button" class="ghost">Theme</button>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" role="status" hidden></div>
+
+  <main>
+    <ol id="stepper" class="stepper" aria-label="Flight state"></ol>
+
+    <section id="tiles" class="tiles" aria-label="Current readings"></section>
+
+    <div class="toolbar">
+      <div class="segmented" role="group" aria-label="Time range" id="ranges"></div>
+      <span class="muted">Time axis is board uptime</span>
+    </div>
+
+    <section id="charts" class="charts" aria-label="Telemetry charts"></section>
+
+    <section class="card">
+      <h2>Packet timeline</h2>
+      <p class="note">One mark per packet. Gaps show where nothing was received.</p>
+      <canvas id="timeline" role="img" aria-label="Packets received over time, by type"></canvas>
+    </section>
+
+    <div class="split">
+      <section class="card">
+        <h2>GPS</h2>
+        <div class="gps">
+          <div class="gps-map">
+            <canvas id="track" role="img" aria-label="GPS track relative to the first fix"></canvas>
+          </div>
+          <dl id="gps-facts" class="facts"></dl>
+        </div>
+        <h3>Satellites</h3>
+        <div id="sats" class="sats"></div>
+      </section>
+      <section class="card">
+        <h2>Pyro continuity</h2>
+        <div id="pyro"></div>
+      </section>
+    </div>
+
+    <div class="split split-stream">
+      <section class="card">
+        <h2>Packets</h2>
+        <div id="chips" class="chips" role="group" aria-label="Filter by packet type"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Received</th><th>Uptime</th><th>Type</th><th class="num">Serial</th><th class="num">RSSI</th><th class="num">LQI</th><th>Summary</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <p id="row-note" class="note"></p>
+      </section>
+      <section class="card">
+        <h2>Packet inspector</h2>
+        <div id="inspector"><p class="note">Select a packet to see its bytes and decoded fields.</p></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="tooltip" class="tooltip" hidden></div>
+  <script src="/app.js"></script>
+</body>
+</html>
