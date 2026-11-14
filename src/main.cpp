@@ -73,7 +73,7 @@ void stopPacketLink() {
 }
 
 void handleSerialCommand(char *command) {
-  if (strcmp(command, "AUTO") == 0) {
+  if (strcmp(command, "IDLE") == 0) {
     startPacketLink();
   } else if (strcmp(command, "PAD") == 0) {
     stopPacketLink();
@@ -95,7 +95,7 @@ void handleSerialCommand(char *command) {
       startPacketLink();
     }
   } else if (strcmp(command, "HELP") == 0) {
-    Serial.println("Commands: CALL <callsign>, AUTO, PAD, HELP");
+    Serial.println("Commands: CALL <callsign>, IDLE, PAD, HELP");
   } else if (command[0] != '\0') {
     Serial.println("Unknown command; send HELP");
   }
