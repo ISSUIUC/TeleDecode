@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Preferences.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "cc1120_config.h"
@@ -16,6 +17,7 @@ AOPacketLink packetLink(radio);
 Preferences preferences;
 
 char receiverCallsign[AO_MAX_CALLSIGN + 1] = "N0CALL";
+double RF_frequency = 435.450;
 char serialCommand[32];
 uint8_t serialCommandLength = 0;
 bool serialCommandOverflow = false;
@@ -47,6 +49,25 @@ bool validCallsign(const char *callsign) {
     }
   }
   return true;
+}
+
+bool parseFrequency(const char *value, double *frequency) {
+  char *end;
+  double parsedFrequency = strtod(value, &end);
+  if (value == end || *end != '\0' ||
+      !(parsedFrequency >= 410.0 && parsedFrequency <= 480.0)) {
+    return false;
+  }
+  *frequency = parsedFrequency;
+  return true;
+}
+
+void applyFrequency(double frequency) {
+  radio.sendCommandStrobe(CC1200_SIDLE);
+  radio.setFrequency(frequency);
+  radio.sendCommandStrobe(CC1200_SCAL);
+  delay(2);
+  radio.sendCommandStrobe(CC1200_SRX);
 }
 
 void startPacketLink() {
@@ -94,8 +115,22 @@ void handleSerialCommand(char *command) {
       packetLink.stop();
       startPacketLink();
     }
+  } else if (strncmp(command, "FREQ ", 5) == 0) {
+    double newFrequency;
+    if (!parseFrequency(command + 5, &newFrequency)) {
+      Serial.println("Frequency must be between 410 and 480 MHz");
+      return;
+    }
+    if (preferencesReady &&
+        preferences.putDouble("frequency", newFrequency) == 0) {
+      Serial.println("Failed to save frequency");
+      return;
+    }
+    RF_frequency = newFrequency;
+    applyFrequency(RF_frequency);
+    Serial.printf("Frequency set to %.3f MHz\n", RF_frequency);
   } else if (strcmp(command, "HELP") == 0) {
-    Serial.println("Commands: CALL <callsign>, IDLE, PAD, HELP");
+    Serial.println("Commands: CALL <callsign>, FREQ <MHz>, IDLE, PAD, HELP");
   } else if (command[0] != '\0') {
     Serial.println("Unknown command; send HELP");
   }
@@ -156,8 +191,14 @@ void setup() {
     } else {
       Serial.println("Stored callsign is invalid; using N0CALL");
     }
+    double savedFrequency = preferences.getDouble("frequency", RF_frequency);
+    if (savedFrequency >= 410.0 && savedFrequency <= 480.0) {
+      RF_frequency = savedFrequency;
+    } else {
+      Serial.println("Stored frequency is invalid; using default");
+    }
   } else {
-    Serial.println("Callsign storage unavailable; using N0CALL");
+    Serial.println("Preference storage unavailable; using defaults");
   }
   init_gpio();
   Serial.println("Boot");
@@ -188,10 +229,7 @@ void setup() {
   radio.applyConfiguration(packet_setup_384, 5);
   radio.applyConfiguration(packet_setup, sizeof(packet_setup) / sizeof(packet_setup[0]));
 
-  radio.setFrequency(435.450);              // 434.550 MHz @ 40 MHz XOSC * changed freq
-  radio.sendCommandStrobe(CC1200_SCAL);      // recalibrate synth for the new freq
-  delay(2);
-  radio.sendCommandStrobe(CC1200_SRX);
+  applyFrequency(RF_frequency);
   radio.writeRegister(CC1200_PKT_LEN, 32);
 }
 
