@@ -10,10 +10,8 @@
 #include "radio_state.h"
 #include "cc1120.h"
 #include "ao_telemetry.h"
-#include "ao_packet_link.h"
 
 CC1120 radio(SPI, SPI_RADIO_CS, SPI_RADIO_MISO, GPIO_RADIO_INT);
-AOPacketLink packetLink(radio);
 Preferences preferences;
 
 char receiverCallsign[AO_MAX_CALLSIGN + 1] = "N0CALL";
@@ -51,11 +49,36 @@ bool validCallsign(const char *callsign) {
   return true;
 }
 
+
+void changeCallSign(const char *callsign) {
+  if (!validCallsign(callsign)) {
+    Serial.println("Callsign must be 1-8 printable non-space characters");
+    return;
+  }
+  if (preferencesReady &&
+      preferences.putString("callsign", callsign) == 0) {
+    Serial.println("Failed to save callsign");
+    return;
+  }
+  memcpy(receiverCallsign, callsign, strlen(callsign) + 1);
+  Serial.printf("Callsign set to %s\n", receiverCallsign);
+  /*
+  if (packetLinkMode) {
+    packetLink.stop();
+    startPacketLink();
+  }
+  */
+}
+
+bool isValidFreq(double frequency) {
+  return frequency >= 410.0 && frequency <= 480.0;
+}
+
 bool parseFrequency(const char *value, double *frequency) {
   char *end;
   double parsedFrequency = strtod(value, &end);
   if (value == end || *end != '\0' ||
-      !(parsedFrequency >= 410.0 && parsedFrequency <= 480.0)) {
+      !isValidFreq(parsedFrequency)) {
     return false;
   }
   *frequency = parsedFrequency;
@@ -70,65 +93,26 @@ void applyFrequency(double frequency) {
   radio.sendCommandStrobe(CC1200_SRX);
 }
 
-void startPacketLink() {
-  packetReady = false;
-  packetLinkMode = false;
-  if (!packetLink.start(receiverCallsign)) {
-    radio.restorePacketLink();
-    Serial.println("Unable to start Packet Link");
+void changeFrequency(const char* frequencyStr) {
+  double frequency;
+  if (!parseFrequency(frequencyStr, &frequency)) {
+    Serial.println("Frequency must be between 410 and 480 MHz");
     return;
   }
-  packetLinkMode = true;
-  Serial.printf("Packet Link active; callsign %s\n", receiverCallsign);
-}
-
-void stopPacketLink() {
-  if (!packetLinkMode) {
+  if (preferencesReady && preferences.putDouble("frequency", frequency) == 0) {
+    Serial.println("Failed to save frequency");
     return;
   }
-  packetLink.stop();
-  radio.restorePacketLink();
-  packetLinkMode = false;
-  packetReady = false;
-  Serial.println("Pad telemetry mode restored");
+  applyFrequency(frequency);
+  Serial.printf("Frequency set to %.3f MHz\n", frequency);
 }
 
 void handleSerialCommand(char *command) {
-  if (strcmp(command, "IDLE") == 0) {
-    startPacketLink();
-  } else if (strcmp(command, "PAD") == 0) {
-    stopPacketLink();
-  } else if (strncmp(command, "CALL ", 5) == 0) {
+  if (strncmp(command, "CALL ", 5) == 0) {
     const char *newCallsign = command + 5;
-    if (!validCallsign(newCallsign)) {
-      Serial.println("Callsign must be 1-8 printable non-space characters");
-      return;
-    }
-    if (preferencesReady &&
-        preferences.putString("callsign", newCallsign) == 0) {
-      Serial.println("Failed to save callsign");
-      return;
-    }
-    memcpy(receiverCallsign, newCallsign, strlen(newCallsign) + 1);
-    Serial.printf("Callsign set to %s\n", receiverCallsign);
-    if (packetLinkMode) {
-      packetLink.stop();
-      startPacketLink();
-    }
+    changeCallSign(newCallsign);
   } else if (strncmp(command, "FREQ ", 5) == 0) {
-    double newFrequency;
-    if (!parseFrequency(command + 5, &newFrequency)) {
-      Serial.println("Frequency must be between 410 and 480 MHz");
-      return;
-    }
-    if (preferencesReady &&
-        preferences.putDouble("frequency", newFrequency) == 0) {
-      Serial.println("Failed to save frequency");
-      return;
-    }
-    RF_frequency = newFrequency;
-    applyFrequency(RF_frequency);
-    Serial.printf("Frequency set to %.3f MHz\n", RF_frequency);
+    changeFrequency(command + 5);
   } else if (strcmp(command, "HELP") == 0) {
     Serial.println("Commands: CALL <callsign>, FREQ <MHz>, IDLE, PAD, HELP");
   } else if (command[0] != '\0') {
@@ -181,25 +165,29 @@ void ARDUINO_ISR_ATTR onRadioInterrupt() {
   // could make timeout a const too?
 }
 
+void setUpPreferences() {
+  preferencesReady = preferences.begin("teledecode", false);
+  if (!preferencesReady) {
+    Serial.println("Preference storage unavailable; using defaults");
+    return;
+  }
+  String savedCallsign = preferences.getString("callsign", "N0CALL");
+  if (validCallsign(savedCallsign.c_str())) {
+    memcpy(receiverCallsign, savedCallsign.c_str(), savedCallsign.length() + 1);
+  } else {
+    Serial.println("Stored callsign is invalid; using N0CALL");
+  }
+  double savedFrequency = preferences.getDouble("frequency", RF_frequency);
+  if (isValidFreq(savedFrequency)) {
+    RF_frequency = savedFrequency;
+  } else {
+    Serial.println("Stored frequency is invalid; using default");
+  }
+}
+
 void setup() {
   Serial.begin(9600);
-  preferencesReady = preferences.begin("teledecode", false);
-  if (preferencesReady) {
-    String savedCallsign = preferences.getString("callsign", "N0CALL");
-    if (validCallsign(savedCallsign.c_str())) {
-      memcpy(receiverCallsign, savedCallsign.c_str(), savedCallsign.length() + 1);
-    } else {
-      Serial.println("Stored callsign is invalid; using N0CALL");
-    }
-    double savedFrequency = preferences.getDouble("frequency", RF_frequency);
-    if (savedFrequency >= 410.0 && savedFrequency <= 480.0) {
-      RF_frequency = savedFrequency;
-    } else {
-      Serial.println("Stored frequency is invalid; using default");
-    }
-  } else {
-    Serial.println("Preference storage unavailable; using defaults");
-  }
+  setUpPreferences();
   init_gpio();
   Serial.println("Boot");
 
@@ -236,59 +224,16 @@ void setup() {
 void loop() {
   readSerialCommands();
 
-  if (packetLinkMode) {
-    packetLink.loop();
-    return;
-  }
-
-  // Serial.print(digitalRead(SPI_RADIO_MISO));
-  // if (digitalRead(SPI_RADIO_MISO)) {
-  //   digitalWrite(GPIO_LED_ORANGE, HIGH);
-  // }
-  // else {
-  //   digitalWrite(GPIO_LED_ORANGE, LOW);
-  // }
-  // Nah
-  // Serial.println(radio.getStatus());
-  // Serial.println(cc1120_settings[40].addr); //doesnt print after 41 for some reason
   uint8_t temp;
   rfStatus_t status = radio.readRegister(0x2f8f, &temp);
-  // Serial.println(temp);
-  // Serial.println(status);
   uint8_t test;
   radio.readRegister(CC1200_PA_CFG1, &test); //works!
-  // Serial.println("loop");
-  // Serial.println(test);
 
-  // if (temp == 0x20) {
-  //   digitalWrite(GPIO_LED_ORANGE, HIGH);
-  // }
-  // else {
-  //   digitalWrite(GPIO_LED_ORANGE, LOW);
-  // }
-  
-  // for (int i=0; i<255; i++) {
-  //   uint8_t temp;
-  //   uint8_t status = radio.readRegister(i, &temp);
-  //   Serial.println(temp);
-  //   if (temp != 255) {
-  //     digitalWrite(GPIO_LED_ORANGE, LOW);
-  //   }
-  //   else {
-  //     digitalWrite(GPIO_LED_ORANGE, HIGH);
-  //   }
-  //   sleep(0.1);
-  // }
-  // This should never happen
   if (packetReady) {
     uint8_t data[AO_MAX_TELEMETRY];
-    // Serial.println("data received");
 
-    //(uint8_t*) packet 
     int tmp = radio.recvPacket(data, 32, 50); //this int should indiate whether a packet was received
     if (tmp == 1) { //1 or wtv value it returns when it is successfully received
-      // digitalWrite(GPIO_LED_BLUE, HIGH); 
-      // // delay(2000);
       digitalWrite(GPIO_LED_BLUE, LOW);
       //then print the packet to console
       Serial.println("packet rx success");
@@ -308,5 +253,4 @@ void loop() {
     radio.sendCommandStrobe(CC1200_SRX);
     packetReady = false;
   }
-  // digitalWrite(GPIO_LED_ORANGE, LOW);
 }
